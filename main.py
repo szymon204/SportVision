@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from database import add_league, create_tables, get_leagues
+from database import add_league, add_team, create_tables, get_leagues, get_teams
 
 app = FastAPI(title="SportVision")
 
@@ -9,6 +9,7 @@ create_tables()
 @app.get("/", response_class=HTMLResponse) #tworzenie aplikacji (zmienna app). Jak przeglądarka wykonuje GET to uruchamia funkcję znajdującą się poniżej.
 def home():
     leagues = get_leagues()
+    teams = get_teams()
     rows = ""
 
     for league in leagues:
@@ -17,6 +18,16 @@ def home():
             <td>{league['id']}</td>
             <td>{league['name']}</td>
             <td>{league['country']}</td>
+        </tr>
+        """
+        team_rows = ""
+
+    for team in teams:
+        team_rows += f"""
+        <tr>
+            <td>{team['id']}</td>
+            <td>{team['name']}</td>
+            <td>{team['league_id']}</td>
         </tr>
         """
 
@@ -66,6 +77,17 @@ def home():
 
                 {rows}
             </table>
+            <h2>Drużyny</h2>
+
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Nazwa drużyny</th>
+                    <th>ID ligi</th>
+                </tr>
+
+                {team_rows}
+            </table>
         </body>
     </html>
     """
@@ -81,3 +103,17 @@ def create_league(api_id: int, name: str, country: str):
     return {
         "message": "Liga została dodana"
     }
+
+@app.post("/teams")
+def create_team(api_id: int, name: str, league_id: int):
+    add_team(api_id, name, league_id)
+
+    return{
+        "message": "Drużyna została dodana"
+    }
+
+@app.get("/teams")
+def teams():
+    return get_teams()
+
+#python -m uvicorn main:app --reload
