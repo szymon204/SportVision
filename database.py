@@ -87,11 +87,17 @@ def get_teams():
     connection.row_factory = sqlite3.Row
 
     rows = connection.execute(
-        """
-        SELECT id, api_id, name, league_id
-        FROM team
-        ORDER BY name
-        """
+    """
+    SELECT
+        team.id,
+        team.api_id,
+        team.name,
+        team.league_id,
+        league.name AS league_name
+    FROM team
+    JOIN league ON team.league_id = league.id
+    ORDER BY team.name
+    """
     ).fetchall()
 
     connection.close()

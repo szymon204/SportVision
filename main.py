@@ -11,6 +11,7 @@ def home():
     leagues = get_leagues()
     teams = get_teams()
     rows = ""
+    team_rows = ""
 
     for league in leagues:
         rows += f"""
@@ -20,14 +21,13 @@ def home():
             <td>{league['country']}</td>
         </tr>
         """
-        team_rows = ""
 
     for team in teams:
         team_rows += f"""
         <tr>
             <td>{team['id']}</td>
             <td>{team['name']}</td>
-            <td>{team['league_id']}</td>
+            <td>{team['league_name']}</td>
         </tr>
         """
 
@@ -83,7 +83,7 @@ def home():
                 <tr>
                     <th>ID</th>
                     <th>Nazwa drużyny</th>
-                    <th>ID ligi</th>
+                    <th>Liga</th>
                 </tr>
 
                 {team_rows}
