@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from football_api import test_api_connection
+
 from database import (
     add_league,
     add_match,
@@ -237,5 +239,8 @@ def create_match(
 def matches():
     return get_matches()
 
+@app.get("/api/test")
+def api_test():
+    return test_api_connection()
 
 #python -m uvicorn main:app --reload
