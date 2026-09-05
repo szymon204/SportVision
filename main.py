@@ -1,12 +1,20 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from database import add_league, add_team, add_match, create_tables, get_leagues, get_teams, get_matches
+from database import (
+    add_league,
+    add_match,
+    add_team,
+    create_tables,
+    get_leagues,
+    get_matches,
+    get_teams,
+)
 
 app = FastAPI(title="SportVision")
 
 create_tables()
 
-@app.get("/", response_class=HTMLResponse) #tworzenie aplikacji (zmienna app). Jak przeglądarka wykonuje GET to uruchamia funkcję znajdującą się poniżej.
+@app.get("/", response_class=HTMLResponse)  # tworzenie aplikacji (zmienna app). Jak przeglądarka wykonuje GET to uruchamia funkcję znajdującą się poniżej.
 def home():
     leagues = get_leagues()
     teams = get_teams()
@@ -32,7 +40,7 @@ def home():
         </tr>
         """
 
-        match_rows = ""
+    match_rows = ""
 
     for football_match in matches:
         match_rows += f"""
@@ -43,6 +51,36 @@ def home():
             <td>{football_match['away_team_name']}</td>
             <td>{football_match['league_name']}</td>
         </tr>
+        """
+    team_goals = {}
+
+    for team in teams:
+        team_goals[team["name"]] = 0
+
+    for football_match in matches:
+        team_goals[football_match["home_team_name"]] += football_match["home_goals"]
+        team_goals[football_match["away_team_name"]] += football_match["away_goals"]
+
+    max_goals = max(team_goals.values(), default=0)
+
+    chart_rows = ""
+
+    for team_name, goals in team_goals.items():
+        if max_goals > 0:
+            bar_width = goals / max_goals * 100
+        else:
+            bar_width = 0
+
+        chart_rows += f"""
+        <div class="chart-row">
+            <div>{team_name}</div>
+
+            <div class="chart-track">
+                <div class="chart-bar" style="width: {bar_width}%"></div>
+            </div>
+
+            <div>{goals}</div>
+        </div>
         """
 
     return f"""
@@ -74,6 +112,27 @@ def home():
                 th {{
                     background-color: #1f7a4d;
                     color: white;
+                }}
+                .chart {{
+                    width: 600px;
+                }}
+
+                .chart-row {{
+                    display: grid;
+                    grid-template-columns: 120px 1fr 40px;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 10px;
+                }}
+
+                .chart-track {{
+                    height: 26px;
+                    background-color: #dddddd;
+                }}
+
+                .chart-bar {{
+                    height: 100%;
+                    background-color: #1f7a4d;
                 }}
             </style>
         </head>
@@ -115,6 +174,11 @@ def home():
 
                 {match_rows}
             </table>
+            <h2>Gole drużyn</h2>
+
+            <div class="chart">
+                {chart_rows}
+            </div>
         </body>
     </html>
     """
@@ -135,7 +199,7 @@ def create_league(api_id: int, name: str, country: str):
 def create_team(api_id: int, name: str, league_id: int):
     add_team(api_id, name, league_id)
 
-    return{
+    return {
         "message": "Drużyna została dodana"
     }
 
@@ -172,4 +236,6 @@ def create_match(
 @app.get("/matches")
 def matches():
     return get_matches()
+
+
 #python -m uvicorn main:app --reload

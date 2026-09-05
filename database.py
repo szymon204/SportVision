@@ -1,13 +1,13 @@
 import sqlite3
-from pathlib import Path #budowanie ścieżki niezaleznie od miejsca projektu
+from pathlib import Path  # budowanie ścieżki niezaleznie od miejsca projektu
 
-DATA_DIRECTORY = Path(__file__).parent / "data" #wskazanie katalogu data obok database.py
-DATABASE_PATH = DATA_DIRECTORY / "sportvision.db" #określenie lokalizacji bazy (jeden plik).
+DATA_DIRECTORY = Path(__file__).parent / "data"  # wskazanie katalogu data obok database.py
+DATABASE_PATH = DATA_DIRECTORY / "sportvision.db"  # określenie lokalizacji bazy (jeden plik).
 
 def create_tables():
-    DATA_DIRECTORY.mkdir(exist_ok=True) #tworzenie folderu data, jeśli jeszcze nie istnieje
+    DATA_DIRECTORY.mkdir(exist_ok=True)  # tworzenie folderu data, jeśli jeszcze nie istnieje
 
-    connection = sqlite3.connect(DATABASE_PATH) #otwiera bazę, jak plik nie istnieje to SQLite automatycznie go tworzy
+    connection = sqlite3.connect(DATABASE_PATH)  # otwiera bazę, jak plik nie istnieje to SQLite automatycznie go tworzy
 
     connection.execute(
         """
@@ -33,30 +33,31 @@ def create_tables():
     )
 
     connection.execute(
-    """
-    CREATE TABLE IF NOT EXISTS football_match (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        api_id INTEGER UNIQUE NOT NULL,
-        league_id INTEGER NOT NULL,
-        season INTEGER NOT NULL,
-        match_date TEXT NOT NULL,
-        home_team_id INTEGER NOT NULL,
-        away_team_id INTEGER NOT NULL,
-        home_goals INTEGER NOT NULL,
-        away_goals INTEGER NOT NULL,
-        FOREIGN KEY (league_id) REFERENCES league(id),
-        FOREIGN KEY (home_team_id) REFERENCES team(id),
-        FOREIGN KEY (away_team_id) REFERENCES team(id)
-    )
-    """
+        """
+        CREATE TABLE IF NOT EXISTS football_match (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            api_id INTEGER UNIQUE NOT NULL,
+            league_id INTEGER NOT NULL,
+            season INTEGER NOT NULL,
+            match_date TEXT NOT NULL,
+            home_team_id INTEGER NOT NULL,
+            away_team_id INTEGER NOT NULL,
+            home_goals INTEGER NOT NULL,
+            away_goals INTEGER NOT NULL,
+            FOREIGN KEY (league_id) REFERENCES league(id),
+            FOREIGN KEY (home_team_id) REFERENCES team(id),
+            FOREIGN KEY (away_team_id) REFERENCES team(id)
+        )
+        """
     )
 
-    connection.commit() #commit zapisuje zmiany
-    connection.close() #zamknięcię połączenia
+    connection.commit()  # commit zapisuje zmiany
+    connection.close()  # zamknięcię połączenia
+
 
 def get_leagues():
     connection = sqlite3.connect(DATABASE_PATH)
-    connection.row_factory = sqlite3.Row #powoduje, że kolumny można odczytywać po nazwach, a nie tylko pozycjach.
+    connection.row_factory = sqlite3.Row  # powoduje, że kolumny można odczytywać po nazwach, a nie tylko pozycjach.
 
     rows = connection.execute(
         """
@@ -64,11 +65,11 @@ def get_leagues():
         FROM league
         ORDER BY name
         """
-    ).fetchall() #pobiera wszystkie znalezione rekordy
+    ).fetchall()  # pobiera wszystkie znalezione rekordy
 
     connection.close()
 
-    return [dict(row) for row in rows] #zmienia rekordy SQLite na zwykłe słowniki Pythona, które FastAPI potrafi zwrócić jako JSON.
+    return [dict(row) for row in rows]  # zmienia rekordy SQLite na zwykłe słowniki Pythona, które FastAPI potrafi zwrócić jako JSON.
 
 
 def add_league(api_id: int, name: str, country: str):
@@ -88,7 +89,7 @@ def add_league(api_id: int, name: str, country: str):
 def add_team(api_id: int, name: str, league_id: int):
     connection = sqlite3.connect(DATABASE_PATH)
 
-    connection.execute("PRAGMA foreign_keys = ON") #sprawdzanie czy podane league_id rzeczywiście istnieje w tabeli lig.
+    connection.execute("PRAGMA foreign_keys = ON")  # sprawdzanie czy podane league_id rzeczywiście istnieje w tabeli lig.
 
     connection.execute(
         """
@@ -106,22 +107,23 @@ def get_teams():
     connection.row_factory = sqlite3.Row
 
     rows = connection.execute(
-    """
-    SELECT
-        team.id,
-        team.api_id,
-        team.name,
-        team.league_id,
-        league.name AS league_name
-    FROM team
-    JOIN league ON team.league_id = league.id
-    ORDER BY team.name
-    """
+        """
+        SELECT
+            team.id,
+            team.api_id,
+            team.name,
+            team.league_id,
+            league.name AS league_name
+        FROM team
+        JOIN league ON team.league_id = league.id
+        ORDER BY team.name
+        """
     ).fetchall()
 
     connection.close()
 
     return [dict(row) for row in rows]
+
 
 def add_match(
     api_id: int,
@@ -164,6 +166,7 @@ def add_match(
 
     connection.commit()
     connection.close()
+
 
 def get_matches():
     connection = sqlite3.connect(DATABASE_PATH)
