@@ -218,6 +218,7 @@ def get_matches():
         SELECT
             football_match.id,
             football_match.api_id,
+            football_match.league_id,
             football_match.season,
             football_match.match_date,
             home_team.name AS home_team_name,

@@ -112,12 +112,56 @@ def calculate_standings(teams, matches):
     return standings_list
 
 @app.get("/", response_class=HTMLResponse)  # tworzenie aplikacji (zmienna app). Jak przeglądarka wykonuje GET to uruchamia funkcję znajdującą się poniżej.
-def home():
+def home(league_id: int = 1):
+    # Pobiera wszystkie ligi z lokalnej bazy.
     leagues = get_leagues()
-    teams = get_teams()
-    matches = get_matches()
+
+    # Pobiera wszystkie drużyny przed filtrowaniem.
+    all_teams = get_teams()
+
+    # Pobiera wszystkie mecze przed filtrowaniem.
+    all_matches = get_matches()
+
+    # Tutaj zapiszemy drużyny należące do wybranej ligi.
+    teams = []
+
+    # Wybiera tylko drużyny z odpowiednim league_id.
+    for team in all_teams:
+        if team["league_id"] == league_id:
+            teams.append(team)
+
+    # Tutaj zapiszemy mecze należące do wybranej ligi.
+    matches = []
+
+    # Wybiera tylko mecze z odpowiednim league_id.
+    for football_match in all_matches:
+        if football_match["league_id"] == league_id:
+            matches.append(football_match)
         # Oblicza tabelę ligową na podstawie drużyn i wyników.
     standings = calculate_standings(teams, matches)
+
+        # Tutaj powstaną opcje widoczne na liście lig.
+    league_options = ""
+
+    # Domyślna nazwa używana dla niepoprawnego ID.
+    selected_league_name = "Nieznana liga"
+
+    # Przechodzi przez wszystkie dostępne ligi.
+    for league in leagues:
+        # Domyślnie opcja nie jest zaznaczona.
+        selected_attribute = ""
+
+        # Zaznacza aktualnie wybraną ligę.
+        if league["id"] == league_id:
+            selected_attribute = "selected"
+            selected_league_name = league["name"]
+
+        # Dodaje ligę jako opcję formularza HTML.
+        league_options += f"""
+        <option value="{league['id']}" {selected_attribute}>
+            {league['name']}
+        </option>
+        """
 
     # Tutaj powstanie kod HTML zawierający wiersze tabeli.
     standings_rows = ""
@@ -270,11 +314,43 @@ def home():
                     height: 100%;
                     background-color: #1f7a4d;
                 }}
+
+                                .league-form {{
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 25px;
+                                }}
+
+                select,
+                button {{
+                    padding: 10px;
+                    border: 1px solid #cccccc;
+                    border-radius: 5px;
+                    font-size: 16px;
+                }}
+
+                button {{
+                    background-color: #1f7a4d;
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                }}
             </style>
         </head>
 
         <body>
             <h1>SportVision</h1>
+                <form class="league-form" method="get" action="/">
+                <label for="league_id">Wybierz ligę:</label>
+
+                <select id="league_id" name="league_id">
+                    {league_options}
+                </select>
+
+                <button type="submit">Pokaż</button>
+            </form>
+
             <h2>Dostępne ligi</h2>
 
             <table>
@@ -286,7 +362,7 @@ def home():
 
                 {rows}
             </table>
-            <h2>Drużyny</h2>
+            <h2>Drużyny – {selected_league_name}</h2>
 
             <table>
                 <tr>
@@ -297,7 +373,7 @@ def home():
 
                 {team_rows}
             </table>
-                        <h2>Tabela ligowa</h2>
+            <h2>Tabela ligowa – {selected_league_name}</h2>
 
             <table class="standings-table">
                 <tr>
@@ -315,7 +391,7 @@ def home():
 
                 {standings_rows}
             </table>
-            <h2>Mecze</h2>
+            <h2>Mecze – {selected_league_name}</h2>
 
             <table>
                 <tr>
@@ -328,7 +404,7 @@ def home():
 
                 {match_rows}
             </table>
-            <h2>Gole drużyn</h2>
+            <h2>Gole drużyn – {selected_league_name}</h2>
 
             <div class="chart">
                 {chart_rows}
@@ -736,8 +812,9 @@ def team_page(team_id: int):
 
         <body>
             <div class="container">
-                <a class="back-link" href="/">← Powrót do strony głównej</a>
-
+                <a class="back-link" href="/?league_id={team['league_id']}">
+                    ← Powrót do ligi
+                </a>
                 <h1>{team['name']}</h1>
                 <p>Liga: {team['league_name']}</p>
 
