@@ -29,6 +29,7 @@ def calculate_standings(teams, matches):
     # Tworzy pusty zestaw statystyk dla każdej drużyny.
     for team in teams:
         standings[team["name"]] = {
+            "team_id": team["id"],
             "team": team["name"],
             "played": 0,
             "won": 0,
@@ -124,7 +125,7 @@ def home():
         standings_rows += f"""
         <tr>
             <td>{position}</td>
-            <td>{standing['team']}</td>
+            <td><a href="/teams/{standing['team_id']}">{standing['team']}</a></td>
             <td>{standing['played']}</td>
             <td>{standing['won']}</td>
             <td>{standing['drawn']}</td>
@@ -151,7 +152,7 @@ def home():
         team_rows += f"""
         <tr>
             <td>{team['id']}</td>
-            <td>{team['name']}</td>
+            <td><a href="/teams/{team['id']}">{team['name']}</a></td>
             <td>{team['league_name']}</td>
         </tr>
         """
@@ -571,5 +572,196 @@ def team_summary(team_id: int):
         "statistics": selected_statistics,
         "matches": selected_matches
     }
+
+@app.get("/teams/{team_id}", response_class=HTMLResponse)
+def team_page(team_id: int):
+    # Wykorzystuje działający endpoint do pobrania danych drużyny.
+    summary = team_summary(team_id)
+
+    # Wyświetla prosty komunikat, jeżeli drużyna nie istnieje.
+    if "message" in summary:
+        return HTMLResponse(
+            content="<h1>Nie znaleziono drużyny</h1>",
+            status_code=404
+        )
+
+    # Wyciąga podstawowe dane z przygotowanego podsumowania.
+    team = summary["team"]
+    statistics = summary["statistics"]
+    matches = summary["matches"]
+
+    # Tutaj powstaną wiersze tabeli z meczami.
+    match_rows = ""
+
+    # Przechodzi przez mecze wybranej drużyny.
+    for football_match in matches:
+        # Sprawdza, czy wybrana drużyna grała jako gospodarz.
+        played_at_home = (
+            football_match["home_team_name"] == team["name"]
+        )
+
+        # Ustala przeciwnika i miejsce rozegrania meczu.
+        if played_at_home:
+            opponent = football_match["away_team_name"]
+            location = "Dom"
+            team_goals = football_match["home_goals"]
+            opponent_goals = football_match["away_goals"]
+        else:
+            opponent = football_match["home_team_name"]
+            location = "Wyjazd"
+            team_goals = football_match["away_goals"]
+            opponent_goals = football_match["home_goals"]
+
+        # Ustala tekst i kolor rezultatu.
+        if team_goals > opponent_goals:
+            result = "Wygrana"
+            result_class = "win"
+        elif team_goals < opponent_goals:
+            result = "Porażka"
+            result_class = "loss"
+        else:
+            result = "Remis"
+            result_class = "draw"
+
+        # Dodaje jeden mecz do tabeli.
+        match_rows += f"""
+        <tr>
+            <td>{football_match['match_date']}</td>
+            <td>{opponent}</td>
+            <td>{location}</td>
+            <td>{team_goals} : {opponent_goals}</td>
+            <td class="{result_class}">{result}</td>
+        </tr>
+        """
+
+    # Zwraca gotową stronę HTML wybranej drużyny.
+    return f"""
+    <!DOCTYPE html>
+    <html lang="pl">
+        <head>
+            <meta charset="UTF-8">
+            <title>{team['name']} – SportVision</title>
+
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    margin: 40px;
+                    background-color: #f4f6f8;
+                    color: #202124;
+                }}
+
+                .container {{
+                    max-width: 1000px;
+                    margin: 0 auto;
+                }}
+
+                .back-link {{
+                    color: #1f7a4d;
+                    text-decoration: none;
+                }}
+
+                .cards {{
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 15px;
+                    margin: 25px 0;
+                }}
+
+                .card {{
+                    min-width: 120px;
+                    padding: 20px;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 8px #dddddd;
+                    text-align: center;
+                }}
+
+                .card strong {{
+                    display: block;
+                    margin-top: 8px;
+                    font-size: 24px;
+                    color: #1f7a4d;
+                }}
+
+                table {{
+                    width: 100%;
+                    border-collapse: collapse;
+                    background-color: white;
+                }}
+
+                th, td {{
+                    padding: 12px;
+                    border: 1px solid #dddddd;
+                    text-align: left;
+                }}
+
+                th {{
+                    background-color: #1f7a4d;
+                    color: white;
+                }}
+
+                .win {{
+                    color: green;
+                    font-weight: bold;
+                }}
+
+                .draw {{
+                    color: #b26a00;
+                    font-weight: bold;
+                }}
+
+                .loss {{
+                    color: #c62828;
+                    font-weight: bold;
+                }}
+            </style>
+        </head>
+
+        <body>
+            <div class="container">
+                <a class="back-link" href="/">← Powrót do strony głównej</a>
+
+                <h1>{team['name']}</h1>
+                <p>Liga: {team['league_name']}</p>
+
+                <div class="cards">
+                    <div class="card">
+                        Mecze
+                        <strong>{statistics['played']}</strong>
+                    </div>
+
+                    <div class="card">
+                        Punkty
+                        <strong>{statistics['points']}</strong>
+                    </div>
+
+                    <div class="card">
+                        Wygrane
+                        <strong>{statistics['won']}</strong>
+                    </div>
+
+                    <div class="card">
+                        Gole
+                        <strong>{statistics['goals_for']}</strong>
+                    </div>
+                </div>
+
+                <h2>Mecze drużyny</h2>
+
+                <table>
+                    <tr>
+                        <th>Data</th>
+                        <th>Przeciwnik</th>
+                        <th>Miejsce</th>
+                        <th>Wynik</th>
+                        <th>Rezultat</th>
+                    </tr>
+
+                    {match_rows}
+                </table>
+            </div>
+        </body>
+    </html>
+    """
 
 #python -m uvicorn main:app --reload
