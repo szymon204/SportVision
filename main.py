@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from football_api import get_premier_league_teams, test_api_connection
-
+from football_api import (
+    get_premier_league_matches,  # Pobiera mecze z API.
+    get_premier_league_teams,    # Pobiera drużyny z API.
+    test_api_connection          # Sprawdza połączenie z API.
+)
 from database import (
     add_league,
     add_match,
@@ -10,7 +13,9 @@ from database import (
     get_leagues,
     get_matches,
     get_teams,
-    get_league_id_by_api_id
+    get_league_id_by_api_id,
+    get_team_id_by_api_id,
+    match_exists
 )
 
 app = FastAPI(title="SportVision")
@@ -267,6 +272,90 @@ def import_teams():
     return {
         "message": "Import drużyn zakończony.",
         "teams_received": len(api_teams)
+    }
+
+@app.post("/api/import-matches")
+def import_matches():
+    # Odszukuje lokalne ID Premier League.
+    league_id = get_league_id_by_api_id(39)
+
+    # Przerywa import, jeżeli liga nie istnieje lokalnie.
+    if league_id is None:
+        return {
+            "message": "Premier League nie istnieje w lokalnej bazie."
+        }
+
+    # Pobiera mecze Premier League z API.
+    api_matches = get_premier_league_matches()
+
+    # Informuje o problemie, jeżeli API nie zwróciło danych.
+    if not api_matches:
+        return {
+            "message": "Nie pobrano meczów z API.",
+            "matches_received": 0
+        }
+
+    # Liczy poprawnie zapisane mecze.
+    added_matches = 0
+
+    # Liczy pominięte mecze i duplikaty.
+    skipped_matches = 0
+
+    # Przechodzi kolejno przez każdy mecz zwrócony przez API.
+    for item in api_matches:
+        # Pobiera podstawowe informacje o spotkaniu.
+        fixture = item["fixture"]
+
+        # Pomija mecze, które nie mają statusu zakończonego spotkania.
+        if fixture["status"]["short"] != "FT":
+            continue
+
+        # Pobiera zewnętrzny identyfikator gospodarza.
+        home_api_id = item["teams"]["home"]["id"]
+
+        # Pobiera zewnętrzny identyfikator gościa.
+        away_api_id = item["teams"]["away"]["id"]
+
+        # Zamienia zewnętrzne ID gospodarza na lokalne ID.
+        home_team_id = get_team_id_by_api_id(home_api_id)
+
+        # Zamienia zewnętrzne ID gościa na lokalne ID.
+        away_team_id = get_team_id_by_api_id(away_api_id)
+
+        # Pomija mecz, jeśli którejś drużyny nie ma w bazie.
+        if home_team_id is None or away_team_id is None:
+            skipped_matches += 1
+            continue
+
+        # Pobiera samą datę z pełnego zapisu czasu.
+        match_date = fixture["date"][:10]
+
+        # Pomija mecz, który został już wcześniej zapisany.
+        if match_exists(match_date, home_team_id, away_team_id):
+            skipped_matches += 1
+            continue
+
+        # Zapisuje zakończony mecz w lokalnej bazie.
+        add_match(
+            fixture["id"],             # Identyfikator meczu w API.
+            league_id,                 # Lokalne ID ligi.
+            2024,                      # Początek sezonu 2024/2025.
+            match_date,                # Data spotkania.
+            home_team_id,              # Lokalne ID gospodarza.
+            away_team_id,              # Lokalne ID gościa.
+            item["goals"]["home"],      # Gole gospodarza.
+            item["goals"]["away"]       # Gole gościa.
+        )
+
+        # Zwiększa licznik zapisanych spotkań.
+        added_matches += 1
+
+    # Zwraca krótkie podsumowanie importu.
+    return {
+        "message": "Import meczów zakończony.",
+        "matches_received": len(api_matches),
+        "matches_added": added_matches,
+        "matches_skipped": skipped_matches
     }
 
 #python -m uvicorn main:app --reload

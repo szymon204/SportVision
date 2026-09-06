@@ -218,3 +218,52 @@ def get_league_id_by_api_id(api_id: int):
         return None
 
     return row[0]
+
+def get_team_id_by_api_id(api_id: int):
+    # Otwiera lokalną bazę SQLite.
+    connection = sqlite3.connect(DATABASE_PATH)
+
+    # Szuka lokalnego ID drużyny na podstawie ID z API.
+    row = connection.execute(
+        """
+        SELECT id
+        FROM team
+        WHERE api_id = ?
+        """,
+        # Przecinek tworzy krotkę zawierającą jeden parametr.
+        (api_id,)
+    ).fetchone()
+
+    # Zamyka połączenie po wykonaniu zapytania.
+    connection.close()
+
+    # Zwraca None, jeżeli drużyny nie znaleziono.
+    if row is None:
+        return None
+
+    # Zwraca lokalne ID znalezionej drużyny.
+    return row[0]
+
+def match_exists(match_date: str, home_team_id: int, away_team_id: int):
+    # Otwiera lokalną bazę SQLite.
+    connection = sqlite3.connect(DATABASE_PATH)
+
+    # Szuka meczu o tej samej dacie, gospodarzu i gościu.
+    row = connection.execute(
+        """
+        SELECT id
+        FROM football_match
+        WHERE match_date = ?
+          AND home_team_id = ?
+          AND away_team_id = ?
+        LIMIT 1
+        """,
+        # Przekazuje wartości w miejsce znaków zapytania.
+        (match_date, home_team_id, away_team_id)
+    ).fetchone()
+
+    # Zamyka połączenie z bazą.
+    connection.close()
+
+    # True oznacza, że taki mecz jest już zapisany.
+    return row is not None

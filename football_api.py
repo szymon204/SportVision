@@ -76,3 +76,46 @@ def get_premier_league_teams():
         return []
 
     return data.get("response", [])
+
+def get_premier_league_matches():
+    # Pobiera klucz API z lokalnego pliku .env.
+    api_key = os.getenv("API_FOOTBALL_KEY")
+
+    # Kończy działanie, jeżeli nie znaleziono klucza.
+    if not api_key:
+        return []
+
+    try:
+        # Wysyła zapytanie o mecze Premier League w sezonie 2024/2025.
+        response = requests.get(
+            f"{BASE_URL}/fixtures",
+            headers={
+                # Przekazuje klucz w wymaganym nagłówku.
+                "x-apisports-key": api_key
+            },
+            params={
+                # 39 jest identyfikatorem Premier League.
+                "league": 39,
+                # Sezon 2024 oznacza rozgrywki 2024/2025.
+                "season": 2024
+            },
+            # Przerywa oczekiwanie po maksymalnie 30 sekundach.
+            timeout=30
+        )
+
+        # Zgłasza błąd, jeżeli serwer zwrócił niepoprawny status HTTP.
+        response.raise_for_status()
+
+        # Zamienia odpowiedź JSON na dane Pythona.
+        data = response.json()
+
+    except requests.RequestException:
+        # Zwraca pustą listę, gdy wystąpi problem z połączeniem.
+        return []
+
+    # Sprawdza, czy API zgłosiło błąd w treści odpowiedzi.
+    if data.get("errors"):
+        return []
+
+    # Zwraca listę meczów albo pustą listę.
+    return data.get("response", [])
