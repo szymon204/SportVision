@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from football_api import (
-    get_premier_league_matches,  # Pobiera mecze z API.
-    get_premier_league_teams,    # Pobiera drużyny z API.
-    test_api_connection          # Sprawdza połączenie z API.
+    get_api_matches,     # Pobiera mecze wskazanej ligi.
+    get_api_teams,       # Pobiera drużyny wskazanej ligi.
+    test_api_connection  # Sprawdza połączenie z API.
 )
 from database import (
     add_league,
@@ -392,46 +392,62 @@ def matches():
 def api_test():
     return test_api_connection()
 
-@app.post("/api/import-teams")
-def import_teams():
-    league_id = get_league_id_by_api_id(39)
+@app.post("/api/import-teams/{league_api_id}")
+def import_teams(league_api_id: int, season: int = 2024):
+    # Szuka lokalnego ID ligi na podstawie ID z API.
+    local_league_id = get_league_id_by_api_id(league_api_id)
 
-    if league_id is None:
+    # Przerywa import, jeżeli liga nie istnieje lokalnie.
+    if local_league_id is None:
         return {
-            "message": "Premier League nie istnieje w lokalnej bazie."
+            "message": "Wybrana liga nie istnieje w lokalnej bazie."
         }
 
-    api_teams = get_premier_league_teams()
+    # Pobiera drużyny wybranej ligi i sezonu.
+    api_teams = get_api_teams(league_api_id, season)
 
+    # Informuje, jeżeli API nie zwróciło drużyn.
+    if not api_teams:
+        return {
+            "message": "Nie pobrano drużyn z API.",
+            "teams_received": 0
+        }
+
+    # Przechodzi przez wszystkie otrzymane drużyny.
     for item in api_teams:
+        # Pobiera właściwe dane drużyny z odpowiedzi API.
         team = item["team"]
 
+        # Zapisuje drużynę w lokalnej bazie SQLite.
         add_team(
             team["id"],
             team["name"],
-            league_id
+            local_league_id
         )
 
+    # Zwraca podsumowanie zakończonego importu.
     return {
         "message": "Import drużyn zakończony.",
+        "league_api_id": league_api_id,
+        "season": season,
         "teams_received": len(api_teams)
     }
 
-@app.post("/api/import-matches")
-def import_matches():
-    # Odszukuje lokalne ID Premier League.
-    league_id = get_league_id_by_api_id(39)
+@app.post("/api/import-matches/{league_api_id}")
+def import_matches(league_api_id: int, season: int = 2024):
+    # Szuka lokalnego ID ligi na podstawie ID z API.
+    local_league_id = get_league_id_by_api_id(league_api_id)
 
     # Przerywa import, jeżeli liga nie istnieje lokalnie.
-    if league_id is None:
+    if local_league_id is None:
         return {
-            "message": "Premier League nie istnieje w lokalnej bazie."
+            "message": "Wybrana liga nie istnieje w lokalnej bazie."
         }
 
-    # Pobiera mecze Premier League z API.
-    api_matches = get_premier_league_matches()
+    # Pobiera mecze wybranej ligi i sezonu.
+    api_matches = get_api_matches(league_api_id, season)
 
-    # Informuje o problemie, jeżeli API nie zwróciło danych.
+    # Informuje, jeżeli API nie zwróciło meczów.
     if not api_matches:
         return {
             "message": "Nie pobrano meczów z API.",
@@ -441,49 +457,45 @@ def import_matches():
     # Liczy poprawnie zapisane mecze.
     added_matches = 0
 
-    # Liczy pominięte mecze i duplikaty.
+    # Liczy pominięte mecze oraz duplikaty.
     skipped_matches = 0
 
-    # Przechodzi kolejno przez każdy mecz zwrócony przez API.
+    # Przechodzi przez każdy mecz otrzymany z API.
     for item in api_matches:
         # Pobiera podstawowe informacje o spotkaniu.
         fixture = item["fixture"]
 
-        # Pomija mecze, które nie mają statusu zakończonego spotkania.
+        # Pomija mecze, które nie zostały zakończone.
         if fixture["status"]["short"] != "FT":
             continue
 
-        # Pobiera zewnętrzny identyfikator gospodarza.
+        # Pobiera zewnętrzne identyfikatory obu drużyn.
         home_api_id = item["teams"]["home"]["id"]
-
-        # Pobiera zewnętrzny identyfikator gościa.
         away_api_id = item["teams"]["away"]["id"]
 
-        # Zamienia zewnętrzne ID gospodarza na lokalne ID.
+        # Zamienia identyfikatory API na lokalne ID.
         home_team_id = get_team_id_by_api_id(home_api_id)
-
-        # Zamienia zewnętrzne ID gościa na lokalne ID.
         away_team_id = get_team_id_by_api_id(away_api_id)
 
-        # Pomija mecz, jeśli którejś drużyny nie ma w bazie.
+        # Pomija mecz, jeżeli którejś drużyny nie ma w bazie.
         if home_team_id is None or away_team_id is None:
             skipped_matches += 1
             continue
 
-        # Pobiera samą datę z pełnego zapisu czasu.
+        # Pobiera datę bez godziny i strefy czasowej.
         match_date = fixture["date"][:10]
 
-        # Pomija mecz, który został już wcześniej zapisany.
+        # Pomija mecz, jeżeli jest już zapisany.
         if match_exists(match_date, home_team_id, away_team_id):
             skipped_matches += 1
             continue
 
         # Zapisuje zakończony mecz w lokalnej bazie.
         add_match(
-            fixture["id"],             # Identyfikator meczu w API.
-            league_id,                 # Lokalne ID ligi.
-            2024,                      # Początek sezonu 2024/2025.
-            match_date,                # Data spotkania.
+            fixture["id"],             # ID meczu nadane przez API.
+            local_league_id,           # Lokalne ID wybranej ligi.
+            season,                    # Wybrany sezon.
+            match_date,                # Data rozegrania meczu.
             home_team_id,              # Lokalne ID gospodarza.
             away_team_id,              # Lokalne ID gościa.
             item["goals"]["home"],      # Gole gospodarza.
@@ -493,9 +505,11 @@ def import_matches():
         # Zwiększa licznik zapisanych spotkań.
         added_matches += 1
 
-    # Zwraca krótkie podsumowanie importu.
+    # Zwraca podsumowanie importu.
     return {
         "message": "Import meczów zakończony.",
+        "league_api_id": league_api_id,
+        "season": season,
         "matches_received": len(api_matches),
         "matches_added": added_matches,
         "matches_skipped": skipped_matches
