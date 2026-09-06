@@ -22,6 +22,91 @@ app = FastAPI(title="SportVision")
 
 create_tables()
 
+def calculate_standings(teams, matches):
+    # Tutaj zapiszemy statystyki wszystkich drużyn.
+    standings = {}
+
+    # Tworzy pusty zestaw statystyk dla każdej drużyny.
+    for team in teams:
+        standings[team["name"]] = {
+            "team": team["name"],
+            "played": 0,
+            "won": 0,
+            "drawn": 0,
+            "lost": 0,
+            "goals_for": 0,
+            "goals_against": 0,
+            "goal_difference": 0,
+            "points": 0
+        }
+
+    # Przechodzi przez wszystkie mecze zapisane w bazie.
+    for football_match in matches:
+        # Pobiera statystyki gospodarza i gościa.
+        home = standings.get(football_match["home_team_name"])
+        away = standings.get(football_match["away_team_name"])
+
+        # Pomija mecz, jeżeli którejś drużyny nie ma na liście.
+        if home is None or away is None:
+            continue
+
+        # Pobiera liczbę goli z danego meczu.
+        home_goals = football_match["home_goals"]
+        away_goals = football_match["away_goals"]
+
+        # Zwiększa liczbę rozegranych meczów obu drużyn.
+        home["played"] += 1
+        away["played"] += 1
+
+        # Dodaje gole strzelone i stracone przez gospodarza.
+        home["goals_for"] += home_goals
+        home["goals_against"] += away_goals
+
+        # Dodaje gole strzelone i stracone przez gościa.
+        away["goals_for"] += away_goals
+        away["goals_against"] += home_goals
+
+        # Sprawdza, czy wygrał gospodarz.
+        if home_goals > away_goals:
+            home["won"] += 1
+            home["points"] += 3
+            away["lost"] += 1
+
+        # Sprawdza, czy wygrał gość.
+        elif away_goals > home_goals:
+            away["won"] += 1
+            away["points"] += 3
+            home["lost"] += 1
+
+        # Jeżeli nikt nie wygrał, mecz zakończył się remisem.
+        else:
+            home["drawn"] += 1
+            away["drawn"] += 1
+            home["points"] += 1
+            away["points"] += 1
+
+    # Zamienia słownik drużyn na zwykłą listę.
+    standings_list = list(standings.values())
+
+    # Oblicza różnicę bramek każdej drużyny.
+    for team in standings_list:
+        team["goal_difference"] = (
+            team["goals_for"] - team["goals_against"]
+        )
+
+    # Sortuje drużyny według punktów, bilansu i strzelonych goli.
+    standings_list.sort(
+        key=lambda team: (
+            team["points"],
+            team["goal_difference"],
+            team["goals_for"]
+        ),
+        reverse=True
+    )
+
+    # Zwraca gotową tabelę ligową.
+    return standings_list
+
 @app.get("/", response_class=HTMLResponse)  # tworzenie aplikacji (zmienna app). Jak przeglądarka wykonuje GET to uruchamia funkcję znajdującą się poniżej.
 def home():
     leagues = get_leagues()
@@ -357,5 +442,16 @@ def import_matches():
         "matches_added": added_matches,
         "matches_skipped": skipped_matches
     }
+
+@app.get("/standings")
+def standings():
+    # Pobiera drużyny z lokalnej bazy SQLite.
+    teams = get_teams()
+
+    # Pobiera rozegrane mecze z lokalnej bazy.
+    matches = get_matches()
+
+    # Oblicza i zwraca aktualną tabelę ligową.
+    return calculate_standings(teams, matches)
 
 #python -m uvicorn main:app --reload
