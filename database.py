@@ -198,3 +198,23 @@ def get_matches():
     connection.close()
 
     return [dict(row) for row in rows]
+
+
+def get_league_id_by_api_id(api_id: int):
+    connection = sqlite3.connect(DATABASE_PATH)
+
+    row = connection.execute(
+        """
+        SELECT id
+        FROM league
+        WHERE api_id = ?
+        """,
+        (api_id,)
+    ).fetchone()
+
+    connection.close()
+
+    if row is None:
+        return None
+
+    return row[0]

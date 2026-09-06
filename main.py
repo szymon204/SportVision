@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from football_api import test_api_connection
+from football_api import get_premier_league_teams, test_api_connection
 
 from database import (
     add_league,
@@ -10,6 +10,7 @@ from database import (
     get_leagues,
     get_matches,
     get_teams,
+    get_league_id_by_api_id
 )
 
 app = FastAPI(title="SportVision")
@@ -242,5 +243,30 @@ def matches():
 @app.get("/api/test")
 def api_test():
     return test_api_connection()
+
+@app.post("/api/import-teams")
+def import_teams():
+    league_id = get_league_id_by_api_id(39)
+
+    if league_id is None:
+        return {
+            "message": "Premier League nie istnieje w lokalnej bazie."
+        }
+
+    api_teams = get_premier_league_teams()
+
+    for item in api_teams:
+        team = item["team"]
+
+        add_team(
+            team["id"],
+            team["name"],
+            league_id
+        )
+
+    return {
+        "message": "Import drużyn zakończony.",
+        "teams_received": len(api_teams)
+    }
 
 #python -m uvicorn main:app --reload

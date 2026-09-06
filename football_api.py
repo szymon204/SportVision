@@ -46,3 +46,33 @@ def test_api_connection():
         "connected": True,
         "countries": data.get("results", 0)
     }
+
+def get_premier_league_teams():
+    api_key = os.getenv("API_FOOTBALL_KEY")
+
+    if not api_key:
+        return []
+
+    try:
+        response = requests.get(
+            f"{BASE_URL}/teams",
+            headers={
+                "x-apisports-key": api_key
+            },
+            params={
+                "league": 39, #identyfikator Premier League
+                "season": 2024
+            },
+            timeout=10
+        )
+
+        response.raise_for_status()
+        data = response.json()
+
+    except requests.RequestException:
+        return []
+
+    if data.get("errors"):
+        return []
+
+    return data.get("response", [])
