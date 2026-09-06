@@ -511,4 +511,65 @@ def standings():
     # Oblicza i zwraca aktualną tabelę ligową.
     return calculate_standings(teams, matches)
 
+@app.get("/teams/{team_id}/summary")
+def team_summary(team_id: int):
+    # Pobiera wszystkie drużyny z lokalnej bazy.
+    teams = get_teams()
+
+    # Pobiera wszystkie zapisane mecze.
+    matches = get_matches()
+
+    # Oblicza aktualne statystyki drużyn.
+    standings = calculate_standings(teams, matches)
+
+    # Tutaj zapiszemy znalezioną drużynę.
+    selected_team = None
+
+    # Szuka drużyny o identyfikatorze podanym w adresie.
+    for team in teams:
+        if team["id"] == team_id:
+            selected_team = team
+            break
+
+    # Kończy działanie, jeżeli drużyna nie istnieje.
+    if selected_team is None:
+        return {
+            "message": "Nie znaleziono drużyny."
+        }
+
+    # Tutaj zapiszemy statystyki wybranej drużyny.
+    selected_statistics = None
+
+    # Szuka statystyk na podstawie nazwy drużyny.
+    for standing in standings:
+        if standing["team"] == selected_team["name"]:
+            selected_statistics = standing
+            break
+
+    # Tutaj powstanie lista meczów wybranej drużyny.
+    selected_matches = []
+
+    # Przechodzi przez wszystkie zapisane mecze.
+    for football_match in matches:
+        # Sprawdza, czy drużyna była gospodarzem.
+        played_at_home = (
+            football_match["home_team_name"] == selected_team["name"]
+        )
+
+        # Sprawdza, czy drużyna była gościem.
+        played_away = (
+            football_match["away_team_name"] == selected_team["name"]
+        )
+
+        # Dodaje mecz, jeśli uczestniczyła w nim wybrana drużyna.
+        if played_at_home or played_away:
+            selected_matches.append(football_match)
+
+    # Zwraca dane drużyny, jej statystyki i rozegrane mecze.
+    return {
+        "team": selected_team,
+        "statistics": selected_statistics,
+        "matches": selected_matches
+    }
+
 #python -m uvicorn main:app --reload
