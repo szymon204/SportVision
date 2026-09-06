@@ -112,6 +112,29 @@ def home():
     leagues = get_leagues()
     teams = get_teams()
     matches = get_matches()
+        # Oblicza tabelę ligową na podstawie drużyn i wyników.
+    standings = calculate_standings(teams, matches)
+
+    # Tutaj powstanie kod HTML zawierający wiersze tabeli.
+    standings_rows = ""
+
+    # Numeruje drużyny, zaczynając od pierwszego miejsca.
+    for position, standing in enumerate(standings, start=1):
+        # Dodaje jeden wiersz z wynikami drużyny.
+        standings_rows += f"""
+        <tr>
+            <td>{position}</td>
+            <td>{standing['team']}</td>
+            <td>{standing['played']}</td>
+            <td>{standing['won']}</td>
+            <td>{standing['drawn']}</td>
+            <td>{standing['lost']}</td>
+            <td>{standing['goals_for']}</td>
+            <td>{standing['goals_against']}</td>
+            <td>{standing['goal_difference']}</td>
+            <td><strong>{standing['points']}</strong></td>
+        </tr>
+        """
     rows = ""
     team_rows = ""
 
@@ -206,6 +229,22 @@ def home():
                     background-color: #1f7a4d;
                     color: white;
                 }}
+
+                .standings-table {{
+                    width: 100%;
+                    max-width: 1000px;
+                }}
+
+                .standings-table th,
+                .standings-table td {{
+                    text-align: center;
+                }}
+
+                               .standings-table th:nth-child(2),
+                .standings-table td:nth-child(2) {{
+                    text-align: left;
+                }}
+
                 .chart {{
                     width: 600px;
                 }}
@@ -253,6 +292,24 @@ def home():
                 </tr>
 
                 {team_rows}
+            </table>
+                        <h2>Tabela ligowa</h2>
+
+            <table class="standings-table">
+                <tr>
+                    <th>Poz.</th>
+                    <th>Drużyna</th>
+                    <th>M</th>
+                    <th>W</th>
+                    <th>R</th>
+                    <th>P</th>
+                    <th>GS</th>
+                    <th>GSr</th>
+                    <th>Bilans</th>
+                    <th>Pkt</th>
+                </tr>
+
+                {standings_rows}
             </table>
             <h2>Mecze</h2>
 
