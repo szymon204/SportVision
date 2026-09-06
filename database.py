@@ -4,6 +4,15 @@ from pathlib import Path  # budowanie ścieżki niezaleznie od miejsca projektu
 DATA_DIRECTORY = Path(__file__).parent / "data"  # wskazanie katalogu data obok database.py
 DATABASE_PATH = DATA_DIRECTORY / "sportvision.db"  # określenie lokalizacji bazy (jeden plik).
 
+# Ligi obsługiwane przez naszą aplikację.
+DEFAULT_LEAGUES = [
+    (39, "Premier League", "England"),
+    (140, "La Liga", "Spain"),
+    (78, "Bundesliga", "Germany"),
+    (135, "Serie A", "Italy"),
+    (61, "Ligue 1", "France")
+]
+
 def create_tables():
     DATA_DIRECTORY.mkdir(exist_ok=True)  # tworzenie folderu data, jeśli jeszcze nie istnieje
 
@@ -84,6 +93,38 @@ def add_league(api_id: int, name: str, country: str):
     )
 
     connection.commit()
+    connection.close()
+
+def add_default_leagues():
+    # Otwiera lokalną bazę SQLite.
+    connection = sqlite3.connect(DATABASE_PATH)
+
+        # Przechodzi przez dane pięciu obsługiwanych lig.
+    for api_id, name, country in DEFAULT_LEAGUES:
+        # Sprawdza, czy liga jest już zapisana.
+        existing_league = connection.execute(
+            """
+            SELECT id
+            FROM league
+            WHERE api_id = ?
+            """,
+            (api_id,)
+        ).fetchone()
+
+        # Dodaje ligę wyłącznie wtedy, gdy jeszcze nie istnieje.
+        if existing_league is None:
+            connection.execute(
+                """
+                INSERT INTO league (api_id, name, country)
+                VALUES (?, ?, ?)
+                """,
+                (api_id, name, country)
+            )
+
+    # Zapisuje dodane ligi w bazie.
+    connection.commit()
+
+    # Zamyka połączenie z bazą.
     connection.close()
 
 def add_team(api_id: int, name: str, league_id: int):

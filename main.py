@@ -15,12 +15,15 @@ from database import (
     get_teams,
     get_league_id_by_api_id,
     get_team_id_by_api_id,
-    match_exists
+    match_exists,
+    add_default_leagues
 )
 
 app = FastAPI(title="SportVision")
 
-create_tables()
+create_tables() #tworzenie tabel
+
+add_default_leagues() #dodanie lig
 
 def calculate_standings(teams, matches):
     # Tutaj zapiszemy statystyki wszystkich drużyn.
