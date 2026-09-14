@@ -858,4 +858,72 @@ def team_page(team_id: int):
     </html>
     """
 
+@app.get("/comparison")
+def compare_teams(first_team_id: int, second_team_id: int):
+    # Nie pozwala porównywać drużyny z samą sobą.
+    if first_team_id == second_team_id:
+        return {
+            "message": "Wybierz dwie różne drużyny."
+        }
+
+    # Pobiera podsumowanie pierwszej drużyny.
+    first_team_summary = team_summary(first_team_id)
+
+    # Pobiera podsumowanie drugiej drużyny.
+    second_team_summary = team_summary(second_team_id)
+
+    # Sprawdza, czy pierwsza drużyna istnieje.
+    if "message" in first_team_summary:
+        return {
+            "message": "Nie znaleziono pierwszej drużyny."
+        }
+
+    # Sprawdza, czy druga drużyna istnieje.
+    if "message" in second_team_summary:
+        return {
+            "message": "Nie znaleziono drugiej drużyny."
+        }
+
+    # Pobiera podstawowe dane pierwszej drużyny.
+    first_team = first_team_summary["team"]
+
+    # Pobiera podstawowe dane drugiej drużyny.
+    second_team = second_team_summary["team"]
+
+    # Nie pozwala porównywać drużyn z różnych lig.
+    if first_team["league_id"] != second_team["league_id"]:
+        return {
+            "message": "Drużyny muszą należeć do tej samej ligi."
+        }
+
+    # Pobiera statystyki pierwszej drużyny.
+    first_statistics = first_team_summary["statistics"]
+
+    # Pobiera statystyki drugiej drużyny.
+    second_statistics = second_team_summary["statistics"]
+
+    # Ustala drużynę mającą więcej punktów.
+    if first_statistics["points"] > second_statistics["points"]:
+        points_leader = first_team["name"]
+    elif second_statistics["points"] > first_statistics["points"]:
+        points_leader = second_team["name"]
+    else:
+        points_leader = "Remis"
+
+    # Zwraca dane potrzebne do późniejszego wykresu.
+    return {
+        "league": first_team["league_name"],
+        "first_team": {
+            "id": first_team["id"],
+            "name": first_team["name"],
+            "statistics": first_statistics
+        },
+        "second_team": {
+            "id": second_team["id"],
+            "name": second_team["name"],
+            "statistics": second_statistics
+        },
+        "points_leader": points_leader
+    }
+
 #python -m uvicorn main:app --reload
