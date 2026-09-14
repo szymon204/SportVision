@@ -336,12 +336,22 @@ def home(league_id: int = 1):
                     border: none;
                     cursor: pointer;
                 }}
+
+                .comparison-link {{
+                    display: inline-block;
+                    margin-bottom: 25px;
+                    padding: 10px 16px;
+                    background-color: #2962a3;
+                    color: white;
+                    border-radius: 5px;
+                    text-decoration: none;
+                }}
             </style>
         </head>
 
         <body>
             <h1>SportVision</h1>
-                <form class="league-form" method="get" action="/">
+            <form class="league-form" method="get" action="/">
                 <label for="league_id">Wybierz ligę:</label>
 
                 <select id="league_id" name="league_id">
@@ -350,6 +360,13 @@ def home(league_id: int = 1):
 
                 <button type="submit">Pokaż</button>
             </form>
+
+            <a
+                class="comparison-link"
+                href="/compare?league_id={league_id}"
+            >
+                Porównaj drużyny
+            </a>
 
             <h2>Dostępne ligi</h2>
 
@@ -925,5 +942,350 @@ def compare_teams(first_team_id: int, second_team_id: int):
         },
         "points_leader": points_leader
     }
+
+@app.get("/compare", response_class=HTMLResponse)
+def comparison_page(
+    league_id: int = 1,
+    first_team_id: int = 0,
+    second_team_id: int = 0
+):
+    # Pobiera wszystkie ligi z lokalnej bazy.
+    leagues = get_leagues()
+
+    # Pobiera wszystkie drużyny przed filtrowaniem.
+    all_teams = get_teams()
+
+    # Tutaj zapiszemy drużyny wybranej ligi.
+    league_teams = []
+
+    # Wybiera drużyny należące do wskazanej ligi.
+    for team in all_teams:
+        if team["league_id"] == league_id:
+            league_teams.append(team)
+
+    # Tutaj powstaną opcje wyboru ligi.
+    league_options = ""
+
+    # Domyślna nazwa dla niepoprawnego ID ligi.
+    selected_league_name = "Nieznana liga"
+
+    # Buduje listę lig widoczną w formularzu.
+    for league in leagues:
+        # Domyślnie opcja nie jest zaznaczona.
+        selected_attribute = ""
+
+        # Zaznacza aktualnie wybraną ligę.
+        if league["id"] == league_id:
+            selected_attribute = "selected"
+            selected_league_name = league["name"]
+
+        # Dodaje ligę do elementu select.
+        league_options += f"""
+        <option value="{league['id']}" {selected_attribute}>
+            {league['name']}
+        </option>
+        """
+
+    # Dodaje początkową opcję pierwszej drużyny.
+    first_team_options = """
+    <option value="0">Wybierz pierwszą drużynę</option>
+    """
+
+    # Dodaje początkową opcję drugiej drużyny.
+    second_team_options = """
+    <option value="0">Wybierz drugą drużynę</option>
+    """
+
+    # Buduje listy drużyn należących do wybranej ligi.
+    for team in league_teams:
+        # Sprawdza, czy jest to wybrana pierwsza drużyna.
+        first_selected = ""
+
+        if team["id"] == first_team_id:
+            first_selected = "selected"
+
+        # Sprawdza, czy jest to wybrana druga drużyna.
+        second_selected = ""
+
+        if team["id"] == second_team_id:
+            second_selected = "selected"
+
+        # Dodaje drużynę do pierwszego pola wyboru.
+        first_team_options += f"""
+        <option value="{team['id']}" {first_selected}>
+            {team['name']}
+        </option>
+        """
+
+        # Dodaje drużynę do drugiego pola wyboru.
+        second_team_options += f"""
+        <option value="{team['id']}" {second_selected}>
+            {team['name']}
+        </option>
+        """
+
+    # Wyświetla instrukcję przed wyborem dwóch drużyn.
+    comparison_html = """
+    <p class="information">
+        Wybierz dwie drużyny, aby zobaczyć porównanie.
+    </p>
+    """
+
+    # Tworzy porównanie dopiero po wybraniu obu drużyn.
+    if first_team_id > 0 and second_team_id > 0:
+        # Wykorzystuje działający endpoint porównania.
+        comparison = compare_teams(
+            first_team_id,
+            second_team_id
+        )
+
+        # Wyświetla komunikat, jeśli porównanie jest niemożliwe.
+        if "message" in comparison:
+            comparison_html = f"""
+            <p class="error">{comparison['message']}</p>
+            """
+
+        else:
+            # Pobiera dane i statystyki pierwszej drużyny.
+            first_team = comparison["first_team"]
+            first_statistics = first_team["statistics"]
+
+            # Pobiera dane i statystyki drugiej drużyny.
+            second_team = comparison["second_team"]
+            second_statistics = second_team["statistics"]
+
+            # Określa statystyki pokazywane na wykresach.
+            metrics = [
+                ("Punkty", "points"),
+                ("Wygrane", "won"),
+                ("Gole strzelone", "goals_for")
+            ]
+
+            # Tutaj powstaną kolejne sekcje wykresu.
+            metric_rows = ""
+
+            # Tworzy wykres dla każdej statystyki.
+            for metric_name, metric_key in metrics:
+                # Pobiera wartość pierwszej drużyny.
+                first_value = first_statistics[metric_key]
+
+                # Pobiera wartość drugiej drużyny.
+                second_value = second_statistics[metric_key]
+
+                # Znajduje większą wartość potrzebną do skali.
+                maximum_value = max(
+                    first_value,
+                    second_value,
+                    1
+                )
+
+                # Oblicza szerokość pierwszego słupka w procentach.
+                first_width = first_value / maximum_value * 100
+
+                # Oblicza szerokość drugiego słupka w procentach.
+                second_width = second_value / maximum_value * 100
+
+                # Dodaje jedną porównywaną statystykę.
+                metric_rows += f"""
+                <section class="metric">
+                    <h3>{metric_name}</h3>
+
+                    <div class="bar-label">
+                        <span>{first_team['name']}</span>
+                        <strong>{first_value}</strong>
+                    </div>
+
+                    <div class="bar-track">
+                        <div
+                            class="bar first-bar"
+                            style="width: {first_width}%"
+                        ></div>
+                    </div>
+
+                    <div class="bar-label">
+                        <span>{second_team['name']}</span>
+                        <strong>{second_value}</strong>
+                    </div>
+
+                    <div class="bar-track">
+                        <div
+                            class="bar second-bar"
+                            style="width: {second_width}%"
+                        ></div>
+                    </div>
+                </section>
+                """
+
+            # Buduje kompletne podsumowanie porównania.
+            comparison_html = f"""
+            <div class="comparison-result">
+                <h2>
+                    {first_team['name']} vs {second_team['name']}
+                </h2>
+
+                <p>
+                    Więcej punktów:
+                    <strong>{comparison['points_leader']}</strong>
+                </p>
+
+                {metric_rows}
+            </div>
+            """
+
+    # Zwraca kompletną stronę HTML.
+    return f"""
+    <!DOCTYPE html>
+    <html lang="pl">
+        <head>
+            <meta charset="UTF-8">
+            <meta
+                name="viewport"
+                content="width=device-width, initial-scale=1"
+            >
+            <title>Porównanie drużyn – SportVision</title>
+
+            <style>
+                body {{
+                    margin: 0;
+                    padding: 30px;
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f6f8;
+                    color: #202124;
+                }}
+
+                .container {{
+                    max-width: 900px;
+                    margin: 0 auto;
+                }}
+
+                .back-link {{
+                    color: #1f7a4d;
+                    text-decoration: none;
+                }}
+
+                form {{
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                    margin: 20px 0;
+                    padding: 20px;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 8px #dddddd;
+                }}
+
+                select,
+                button {{
+                    padding: 10px;
+                    border: 1px solid #cccccc;
+                    border-radius: 5px;
+                    font-size: 16px;
+                }}
+
+                button {{
+                    border: none;
+                    background-color: #1f7a4d;
+                    color: white;
+                    cursor: pointer;
+                }}
+
+                .comparison-result {{
+                    margin-top: 25px;
+                    padding: 25px;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 8px #dddddd;
+                }}
+
+                .metric {{
+                    margin-top: 25px;
+                }}
+
+                .bar-label {{
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 8px 0 5px;
+                }}
+
+                .bar-track {{
+                    height: 25px;
+                    background-color: #e0e0e0;
+                    border-radius: 5px;
+                    overflow: hidden;
+                }}
+
+                .bar {{
+                    height: 100%;
+                }}
+
+                .first-bar {{
+                    background-color: #1f7a4d;
+                }}
+
+                .second-bar {{
+                    background-color: #2962a3;
+                }}
+
+                .information {{
+                    margin-top: 25px;
+                }}
+
+                .error {{
+                    color: #c62828;
+                    font-weight: bold;
+                }}
+            </style>
+        </head>
+
+        <body>
+            <div class="container">
+                <a
+                    class="back-link"
+                    href="/?league_id={league_id}"
+                >
+                    ← Powrót do ligi
+                </a>
+
+                <h1>Porównanie drużyn</h1>
+
+                <h2>1. Wybierz ligę</h2>
+
+                <form method="get" action="/compare">
+                    <select name="league_id">
+                        {league_options}
+                    </select>
+
+                    <button type="submit">
+                        Pokaż drużyny
+                    </button>
+                </form>
+
+                <h2>2. Wybierz drużyny z ligi {selected_league_name}</h2>
+
+                <form method="get" action="/compare">
+                    <input
+                        type="hidden"
+                        name="league_id"
+                        value="{league_id}"
+                    >
+
+                    <select name="first_team_id">
+                        {first_team_options}
+                    </select>
+
+                    <select name="second_team_id">
+                        {second_team_options}
+                    </select>
+
+                    <button type="submit">
+                        Porównaj
+                    </button>
+                </form>
+
+                {comparison_html}
+            </div>
+        </body>
+    </html>
+    """
 
 #python -m uvicorn main:app --reload
