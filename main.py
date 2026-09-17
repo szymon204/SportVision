@@ -195,17 +195,7 @@ def home(league_id: int = 1):
             <td><strong>{standing['points']}</strong></td>
         </tr>
         """
-    rows = ""
     team_rows = ""
-
-    for league in leagues:
-        rows += f"""
-        <tr>
-            <td>{league['id']}</td>
-            <td>{league['name']}</td>
-            <td>{league['country']}</td>
-        </tr>
-        """
 
     for team in teams:
         team_rows += f"""
@@ -264,86 +254,105 @@ def home(league_id: int = 1):
     <html lang="pl">
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>SportVision</title>
             <link rel="stylesheet" href="/static/style.css">
         </head>
 
         <body class="home-page">
-            <h1>SportVision</h1>
-            <form class="league-form" method="get" action="/">
-                <label for="league_id">Wybierz ligę:</label>
+            <div class="home-container">
+                <header class="hero">
+                    <div>
+                        <p class="eyebrow">Lokalne centrum statystyk</p>
+                        <h1>SportVision</h1>
+                        <p class="hero-text">
+                            Wyniki i statystyki europejskich lig w jednym miejscu.
+                        </p>
+                    </div>
+                    <span class="status-badge">Dane dostępne offline</span>
+                </header>
 
-                <select id="league_id" name="league_id">
-                    {league_options}
-                </select>
+                <section class="summary-cards">
+                    <div class="summary-card">
+                        <span>Dostępne ligi</span>
+                        <strong>{len(leagues)}</strong>
+                    </div>
+                    <div class="summary-card">
+                        <span>Drużyny w lidze</span>
+                        <strong>{len(teams)}</strong>
+                    </div>
+                    <div class="summary-card">
+                        <span>Rozegrane mecze</span>
+                        <strong>{len(matches)}</strong>
+                    </div>
+                </section>
 
-                <button type="submit">Pokaż</button>
-            </form>
+                <div class="home-actions">
+                    <form class="league-form" method="get" action="/">
+                        <label for="league_id">Wybierz ligę:</label>
+                        <select id="league_id" name="league_id">
+                            {league_options}
+                        </select>
+                        <button type="submit">Pokaż</button>
+                    </form>
 
-            <a
-                class="comparison-link"
-                href="/compare?league_id={league_id}"
-            >
-                Porównaj drużyny
-            </a>
+                    <a
+                        class="comparison-link"
+                        href="/compare?league_id={league_id}"
+                    >
+                        Porównaj drużyny
+                    </a>
+                </div>
 
-            <h2>Dostępne ligi</h2>
+                <h2>Tabela ligowa – {selected_league_name}</h2>
+                <div class="table-wrapper">
+                    <table class="standings-table">
+                        <tr>
+                            <th>Poz.</th>
+                            <th>Drużyna</th>
+                            <th>M</th>
+                            <th>W</th>
+                            <th>R</th>
+                            <th>P</th>
+                            <th>GS</th>
+                            <th>GSr</th>
+                            <th>Bilans</th>
+                            <th>Pkt</th>
+                        </tr>
+                        {standings_rows}
+                    </table>
+                </div>
 
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Nazwa ligi</th>
-                    <th>Kraj</th>
-                </tr>
+                <h2>Gole drużyn – {selected_league_name}</h2>
+                <div class="chart">
+                    {chart_rows}
+                </div>
 
-                {rows}
-            </table>
-            <h2>Drużyny – {selected_league_name}</h2>
+                <h2>Drużyny – {selected_league_name}</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nazwa drużyny</th>
+                            <th>Liga</th>
+                        </tr>
+                        {team_rows}
+                    </table>
+                </div>
 
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Nazwa drużyny</th>
-                    <th>Liga</th>
-                </tr>
-
-                {team_rows}
-            </table>
-            <h2>Tabela ligowa – {selected_league_name}</h2>
-
-            <table class="standings-table">
-                <tr>
-                    <th>Poz.</th>
-                    <th>Drużyna</th>
-                    <th>M</th>
-                    <th>W</th>
-                    <th>R</th>
-                    <th>P</th>
-                    <th>GS</th>
-                    <th>GSr</th>
-                    <th>Bilans</th>
-                    <th>Pkt</th>
-                </tr>
-
-                {standings_rows}
-            </table>
-            <h2>Mecze – {selected_league_name}</h2>
-
-            <table>
-                <tr>
-                    <th>Data</th>
-                    <th>Gospodarz</th>
-                    <th>Wynik</th>
-                    <th>Gość</th>
-                    <th>Liga</th>
-                </tr>
-
-                {match_rows}
-            </table>
-            <h2>Gole drużyn – {selected_league_name}</h2>
-
-            <div class="chart">
-                {chart_rows}
+                <h2>Mecze – {selected_league_name}</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Data</th>
+                            <th>Gospodarz</th>
+                            <th>Wynik</th>
+                            <th>Gość</th>
+                            <th>Liga</th>
+                        </tr>
+                        {match_rows}
+                    </table>
+                </div>
             </div>
         </body>
     </html>

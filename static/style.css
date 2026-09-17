@@ -4,14 +4,15 @@
 }
 
 body {
+    margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #f4f6f8;
+    background-color: #eef2f6;
     color: #202124;
 }
 
 .home-page,
 .team-page {
-    margin: 40px;
+    padding: 40px;
 }
 
 .comparison-page {
@@ -29,24 +30,95 @@ body {
     max-width: 900px;
 }
 
+/* Nagłówek i podsumowanie strony głównej. */
+.home-container {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+    padding: 32px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #155c3a, #27875a);
+    color: white;
+}
+
+.hero h1 {
+    margin: 4px 0 10px;
+    font-size: 42px;
+}
+
+.eyebrow,
+.hero-text {
+    margin: 0;
+}
+
+.eyebrow {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-badge {
+    padding: 10px 14px;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.18);
+    white-space: nowrap;
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.summary-card {
+    padding: 20px;
+    border-left: 5px solid #1f7a4d;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 3px 12px rgba(32, 33, 36, 0.08);
+}
+
+.summary-card span,
+.summary-card strong {
+    display: block;
+}
+
+.summary-card strong {
+    margin-top: 8px;
+    color: #1f7a4d;
+    font-size: 30px;
+}
+
+.home-page h2 {
+    margin-top: 38px;
+    color: #184f36;
+}
+
 /* Wspólne tabele. */
 table {
+    width: 100%;
     border-collapse: collapse;
     background-color: white;
 }
 
-.home-page table {
-    width: 600px;
-}
-
-.team-page table {
-    width: 100%;
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(32, 33, 36, 0.08);
 }
 
 th,
 td {
     padding: 12px;
-    border: 1px solid #dddddd;
+    border-bottom: 1px solid #e2e6ea;
     text-align: left;
 }
 
@@ -55,10 +127,20 @@ th {
     color: white;
 }
 
+.home-page tr:nth-child(even) td {
+    background-color: #f8faf9;
+}
+
+.home-page td a {
+    color: #145b39;
+    font-weight: bold;
+    text-decoration: none;
+}
+
 /* Tabela ligowa na stronie głównej. */
 .standings-table {
     width: 100% !important;
-    max-width: 1000px;
+    max-width: none;
 }
 
 .standings-table th,
@@ -76,7 +158,16 @@ th {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 25px;
+    padding: 16px;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 3px 12px rgba(32, 33, 36, 0.08);
+}
+
+.home-actions {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
 }
 
 select,
@@ -94,10 +185,14 @@ button {
     cursor: pointer;
 }
 
+button:hover {
+    background-color: #155c3a;
+}
+
 /* Odnośniki między stronami. */
 .comparison-link {
-    display: inline-block;
-    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
     padding: 10px 16px;
     background-color: #2962a3;
     color: white;
@@ -112,12 +207,16 @@ button {
 
 /* Wykres goli na stronie głównej. */
 .chart {
-    width: 600px;
+    width: 100%;
+    padding: 22px;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 3px 12px rgba(32, 33, 36, 0.08);
 }
 
 .chart-row {
     display: grid;
-    grid-template-columns: 120px 1fr 40px;
+    grid-template-columns: 180px 1fr 45px;
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
@@ -226,4 +325,28 @@ button {
 
 .information {
     margin-top: 25px;
+}
+
+/* Prosty układ dla mniejszych ekranów. */
+@media (max-width: 700px) {
+    .home-page,
+    .team-page,
+    .comparison-page {
+        padding: 16px;
+    }
+
+    .hero,
+    .home-actions,
+    .league-form {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-row {
+        grid-template-columns: 110px 1fr 35px;
+    }
 }
