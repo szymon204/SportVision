@@ -1,0 +1,229 @@
+/* Wspólne ustawienia wszystkich stron. */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    color: #202124;
+}
+
+.home-page,
+.team-page {
+    margin: 40px;
+}
+
+.comparison-page {
+    margin: 0;
+    padding: 30px;
+}
+
+/* Główny kontener stron szczegółowych. */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.comparison-page .container {
+    max-width: 900px;
+}
+
+/* Wspólne tabele. */
+table {
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.home-page table {
+    width: 600px;
+}
+
+.team-page table {
+    width: 100%;
+}
+
+th,
+td {
+    padding: 12px;
+    border: 1px solid #dddddd;
+    text-align: left;
+}
+
+th {
+    background-color: #1f7a4d;
+    color: white;
+}
+
+/* Tabela ligowa na stronie głównej. */
+.standings-table {
+    width: 100% !important;
+    max-width: 1000px;
+}
+
+.standings-table th,
+.standings-table td {
+    text-align: center;
+}
+
+.standings-table th:nth-child(2),
+.standings-table td:nth-child(2) {
+    text-align: left;
+}
+
+/* Formularz wyboru ligi. */
+.league-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+select,
+button {
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+button {
+    border: none;
+    background-color: #1f7a4d;
+    color: white;
+    cursor: pointer;
+}
+
+/* Odnośniki między stronami. */
+.comparison-link {
+    display: inline-block;
+    margin-bottom: 25px;
+    padding: 10px 16px;
+    background-color: #2962a3;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.back-link {
+    color: #1f7a4d;
+    text-decoration: none;
+}
+
+/* Wykres goli na stronie głównej. */
+.chart {
+    width: 600px;
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 40px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.chart-track {
+    height: 26px;
+    background-color: #dddddd;
+}
+
+.chart-bar {
+    height: 100%;
+    background-color: #1f7a4d;
+}
+
+/* Karty statystyk na stronie drużyny. */
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 25px 0;
+}
+
+.card {
+    min-width: 120px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #dddddd;
+    text-align: center;
+}
+
+.card strong {
+    display: block;
+    margin-top: 8px;
+    font-size: 24px;
+    color: #1f7a4d;
+}
+
+/* Kolory rezultatów meczów. */
+.win {
+    color: green;
+    font-weight: bold;
+}
+
+.draw {
+    color: #b26a00;
+    font-weight: bold;
+}
+
+.loss,
+.error {
+    color: #c62828;
+    font-weight: bold;
+}
+
+/* Formularze na stronie porównania. */
+.comparison-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #dddddd;
+}
+
+/* Wynik porównania dwóch drużyn. */
+.comparison-result {
+    margin-top: 25px;
+    padding: 25px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #dddddd;
+}
+
+.metric {
+    margin-top: 25px;
+}
+
+.bar-label {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0 5px;
+}
+
+.bar-track {
+    height: 25px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+}
+
+.first-bar {
+    background-color: #1f7a4d;
+}
+
+.second-bar {
+    background-color: #2962a3;
+}
+
+.information {
+    margin-top: 25px;
+}

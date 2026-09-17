@@ -1,3 +1,5 @@
+from pathlib import Path #udostępnianie folderu static.
+from fastapi.staticfiles import StaticFiles #udostępnianie folderu static.
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from football_api import (
@@ -19,7 +21,17 @@ from database import (
     add_default_leagues
 )
 
+STATIC_DIRECTORY = Path(__file__).parent / "static" #wskazuje folder CSS niezależnie od miejsca uruchomienia programu.
+
 app = FastAPI(title="SportVision")
+
+#udostępnia pliki CSS pod adresem /static.
+#odczytanie folderu static.
+app.mount(
+    "/static",
+    StaticFiles(directory=STATIC_DIRECTORY),
+    name="static"
+)
 
 create_tables() #tworzenie tabel
 
@@ -253,103 +265,10 @@ def home(league_id: int = 1):
         <head>
             <meta charset="UTF-8">
             <title>SportVision</title>
-
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    margin: 40px;
-                    background-color: #f4f6f8;
-                }}
-
-                table {{
-                    width: 600px;
-                    border-collapse: collapse;
-                    background-color: white;
-                }}
-
-                th, td {{
-                    padding: 12px;
-                    border: 1px solid #dddddd;
-                    text-align: left;
-                }}
-
-                th {{
-                    background-color: #1f7a4d;
-                    color: white;
-                }}
-
-                .standings-table {{
-                    width: 100%;
-                    max-width: 1000px;
-                }}
-
-                .standings-table th,
-                .standings-table td {{
-                    text-align: center;
-                }}
-
-                               .standings-table th:nth-child(2),
-                .standings-table td:nth-child(2) {{
-                    text-align: left;
-                }}
-
-                .chart {{
-                    width: 600px;
-                }}
-
-                .chart-row {{
-                    display: grid;
-                    grid-template-columns: 120px 1fr 40px;
-                    align-items: center;
-                    gap: 10px;
-                    margin-bottom: 10px;
-                }}
-
-                .chart-track {{
-                    height: 26px;
-                    background-color: #dddddd;
-                }}
-
-                .chart-bar {{
-                    height: 100%;
-                    background-color: #1f7a4d;
-                }}
-
-                                .league-form {{
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    margin-bottom: 25px;
-                                }}
-
-                select,
-                button {{
-                    padding: 10px;
-                    border: 1px solid #cccccc;
-                    border-radius: 5px;
-                    font-size: 16px;
-                }}
-
-                button {{
-                    background-color: #1f7a4d;
-                    color: white;
-                    border: none;
-                    cursor: pointer;
-                }}
-
-                .comparison-link {{
-                    display: inline-block;
-                    margin-bottom: 25px;
-                    padding: 10px 16px;
-                    background-color: #2962a3;
-                    color: white;
-                    border-radius: 5px;
-                    text-decoration: none;
-                }}
-            </style>
+            <link rel="stylesheet" href="/static/style.css">
         </head>
 
-        <body>
+        <body class="home-page">
             <h1>SportVision</h1>
             <form class="league-form" method="get" action="/">
                 <label for="league_id">Wybierz ligę:</label>
@@ -751,83 +670,10 @@ def team_page(team_id: int):
         <head>
             <meta charset="UTF-8">
             <title>{team['name']} – SportVision</title>
-
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    margin: 40px;
-                    background-color: #f4f6f8;
-                    color: #202124;
-                }}
-
-                .container {{
-                    max-width: 1000px;
-                    margin: 0 auto;
-                }}
-
-                .back-link {{
-                    color: #1f7a4d;
-                    text-decoration: none;
-                }}
-
-                .cards {{
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 15px;
-                    margin: 25px 0;
-                }}
-
-                .card {{
-                    min-width: 120px;
-                    padding: 20px;
-                    background-color: white;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 8px #dddddd;
-                    text-align: center;
-                }}
-
-                .card strong {{
-                    display: block;
-                    margin-top: 8px;
-                    font-size: 24px;
-                    color: #1f7a4d;
-                }}
-
-                table {{
-                    width: 100%;
-                    border-collapse: collapse;
-                    background-color: white;
-                }}
-
-                th, td {{
-                    padding: 12px;
-                    border: 1px solid #dddddd;
-                    text-align: left;
-                }}
-
-                th {{
-                    background-color: #1f7a4d;
-                    color: white;
-                }}
-
-                .win {{
-                    color: green;
-                    font-weight: bold;
-                }}
-
-                .draw {{
-                    color: #b26a00;
-                    font-weight: bold;
-                }}
-
-                .loss {{
-                    color: #c62828;
-                    font-weight: bold;
-                }}
-            </style>
+            <link rel="stylesheet" href="/static/style.css">
         </head>
 
-        <body>
+        <body class="team-page">
             <div class="container">
                 <a class="back-link" href="/?league_id={team['league_id']}">
                     ← Powrót do ligi
@@ -1143,101 +989,10 @@ def comparison_page(
                 content="width=device-width, initial-scale=1"
             >
             <title>Porównanie drużyn – SportVision</title>
-
-            <style>
-                body {{
-                    margin: 0;
-                    padding: 30px;
-                    font-family: Arial, sans-serif;
-                    background-color: #f4f6f8;
-                    color: #202124;
-                }}
-
-                .container {{
-                    max-width: 900px;
-                    margin: 0 auto;
-                }}
-
-                .back-link {{
-                    color: #1f7a4d;
-                    text-decoration: none;
-                }}
-
-                form {{
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 12px;
-                    margin: 20px 0;
-                    padding: 20px;
-                    background-color: white;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 8px #dddddd;
-                }}
-
-                select,
-                button {{
-                    padding: 10px;
-                    border: 1px solid #cccccc;
-                    border-radius: 5px;
-                    font-size: 16px;
-                }}
-
-                button {{
-                    border: none;
-                    background-color: #1f7a4d;
-                    color: white;
-                    cursor: pointer;
-                }}
-
-                .comparison-result {{
-                    margin-top: 25px;
-                    padding: 25px;
-                    background-color: white;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 8px #dddddd;
-                }}
-
-                .metric {{
-                    margin-top: 25px;
-                }}
-
-                .bar-label {{
-                    display: flex;
-                    justify-content: space-between;
-                    margin: 8px 0 5px;
-                }}
-
-                .bar-track {{
-                    height: 25px;
-                    background-color: #e0e0e0;
-                    border-radius: 5px;
-                    overflow: hidden;
-                }}
-
-                .bar {{
-                    height: 100%;
-                }}
-
-                .first-bar {{
-                    background-color: #1f7a4d;
-                }}
-
-                .second-bar {{
-                    background-color: #2962a3;
-                }}
-
-                .information {{
-                    margin-top: 25px;
-                }}
-
-                .error {{
-                    color: #c62828;
-                    font-weight: bold;
-                }}
-            </style>
+            <link rel="stylesheet" href="/static/style.css">
         </head>
 
-        <body>
+        <body class="comparison-page">
             <div class="container">
                 <a
                     class="back-link"
@@ -1250,7 +1005,7 @@ def comparison_page(
 
                 <h2>1. Wybierz ligę</h2>
 
-                <form method="get" action="/compare">
+                <form class="comparison-form" method="get" action="/compare">
                     <select name="league_id">
                         {league_options}
                     </select>
@@ -1262,7 +1017,7 @@ def comparison_page(
 
                 <h2>2. Wybierz drużyny z ligi {selected_league_name}</h2>
 
-                <form method="get" action="/compare">
+                <form class="comparison-form" method="get" action="/compare">
                     <input
                         type="hidden"
                         name="league_id"
