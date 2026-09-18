@@ -44,7 +44,8 @@ def calculate_standings(teams, matches):
     # Tworzy pusty zestaw statystyk dla każdej drużyny.
     for team in teams:
         standings[team["name"]] = {
-            "team_id": team["id"],
+            "team_id": team["id"], #każdy wiersz przechowuje team id do otwarcia strony drużyny.
+            "team_api_id": team["api_id"], #każdy wiersz przechowuje team api id potrzebne do znalezienia herbu.
             "team": team["name"],
             "played": 0,
             "won": 0,
@@ -158,6 +159,9 @@ def home(league_id: int = 1):
     # Domyślna nazwa używana dla niepoprawnego ID.
     selected_league_name = "Nieznana liga"
 
+    # Przechowuje identyfikator API potrzebny do znalezienia pliku logo.
+    selected_league_api_id = 39
+
     # Przechodzi przez wszystkie dostępne ligi.
     for league in leagues:
         # Domyślnie opcja nie jest zaznaczona.
@@ -167,6 +171,7 @@ def home(league_id: int = 1):
         if league["id"] == league_id:
             selected_attribute = "selected"
             selected_league_name = league["name"]
+            selected_league_api_id = league["api_id"]
 
         # Dodaje ligę jako opcję formularza HTML.
         league_options += f"""
@@ -184,7 +189,19 @@ def home(league_id: int = 1):
         standings_rows += f"""
         <tr>
             <td>{position}</td>
-            <td><a href="/teams/{standing['team_id']}">{standing['team']}</a></td>
+            <td>
+                <a
+                    class="team-table-link"
+                    href="/teams/{standing['team_id']}"
+                >
+                    <img
+                        class="table-team-logo"
+                        src="/static/logos/teams/{standing['team_api_id']}.png"
+                        alt=""
+                    >
+                    <span>{standing['team']}</span>
+                </a>
+            </td>
             <td>{standing['played']}</td>
             <td>{standing['won']}</td>
             <td>{standing['drawn']}</td>
@@ -262,14 +279,7 @@ def home(league_id: int = 1):
         <body class="home-page">
             <div class="home-container">
                 <header class="hero">
-                    <div>
-                        <p class="eyebrow">Lokalne centrum statystyk</p>
-                        <h1>SportVision</h1>
-                        <p class="hero-text">
-                            Wyniki i statystyki europejskich lig w jednym miejscu.
-                        </p>
-                    </div>
-                    <span class="status-badge">Dane dostępne offline</span>
+                    <h1>SportVision</h1>
                 </header>
 
                 <section class="summary-cards">
@@ -304,7 +314,15 @@ def home(league_id: int = 1):
                     </a>
                 </div>
 
-                <h2>Tabela ligowa – {selected_league_name}</h2>
+                <h2 class="league-heading">
+                    <img
+                        class="league-logo"
+                        src="/static/logos/leagues/{selected_league_api_id}.png"
+                        alt="Logo ligi {selected_league_name}"
+                    >
+                    Tabela ligowa – {selected_league_name}
+                </h2>
+
                 <div class="table-wrapper">
                     <table class="standings-table">
                         <tr>
@@ -687,8 +705,18 @@ def team_page(team_id: int):
                 <a class="back-link" href="/?league_id={team['league_id']}">
                     ← Powrót do ligi
                 </a>
-                <h1>{team['name']}</h1>
-                <p>Liga: {team['league_name']}</p>
+                <div class="team-header">
+                    <img
+                        class="team-logo"
+                        src="/static/logos/teams/{team['api_id']}.png"
+                        alt="Herb drużyny {team['name']}"
+                    >
+
+                    <div>
+                        <h1>{team['name']}</h1>
+                        <p>Liga: {team['league_name']}</p>
+                    </div>
+                </div>
 
                 <div class="cards">
                     <div class="card">
@@ -833,6 +861,7 @@ def comparison_page(
         if league["id"] == league_id:
             selected_attribute = "selected"
             selected_league_name = league["name"]
+            selected_league_api_id = league["api_id"]
 
         # Dodaje ligę do elementu select.
         league_options += f"""

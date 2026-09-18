@@ -38,37 +38,21 @@ body {
 
 .hero {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    gap: 25px;
-    padding: 32px;
+    min-height: 180px;
+    padding: 0;
     border-radius: 16px;
     background: linear-gradient(135deg, #155c3a, #27875a);
     color: white;
+    text-align: center;
 }
 
 .hero h1 {
-    margin: 4px 0 10px;
-    font-size: 42px;
-}
-
-.eyebrow,
-.hero-text {
+    width: 100%;
     margin: 0;
-}
-
-.eyebrow {
-    font-size: 14px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.status-badge {
-    padding: 10px 14px;
-    border-radius: 20px;
-    background-color: rgba(255, 255, 255, 0.18);
-    white-space: nowrap;
+    font-size: 64px;
+    text-align: center;
 }
 
 .summary-cards {
@@ -100,6 +84,19 @@ body {
 .home-page h2 {
     margin-top: 38px;
     color: #184f36;
+}
+
+/* Nagłówek tabeli z logiem wybranej ligi. */
+.league-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.league-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
 }
 
 /* Wspólne tabele. */
@@ -135,6 +132,20 @@ th {
     color: #145b39;
     font-weight: bold;
     text-decoration: none;
+}
+
+/* Nazwa i herb drużyny w tabeli ligowej. */
+.team-table-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.table-team-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 /* Tabela ligowa na stronie głównej. */
@@ -230,6 +241,30 @@ button:hover {
 .chart-bar {
     height: 100%;
     background-color: #1f7a4d;
+}
+
+/* Nagłówek strony wybranej drużyny. */
+.team-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 25px 0;
+}
+
+.team-header h1,
+.team-header p {
+    margin: 0;
+}
+
+.team-header p {
+    margin-top: 6px;
+    color: #5f6368;
+}
+
+.team-logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
 }
 
 /* Karty statystyk na stronie drużyny. */
@@ -335,7 +370,6 @@ button:hover {
         padding: 16px;
     }
 
-    .hero,
     .home-actions,
     .league-form {
         align-items: stretch;
@@ -348,5 +382,9 @@ button:hover {
 
     .chart-row {
         grid-template-columns: 110px 1fr 35px;
+    }
+
+    .hero h1 {
+    font-size: 44px;
     }
 }
