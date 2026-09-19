@@ -153,6 +153,8 @@ def home(league_id: int = 1):
         # Oblicza tabelę ligową na podstawie drużyn i wyników.
     standings = calculate_standings(teams, matches)
 
+    ostatnie_mecze = matches[:10] # Wybiera 10 ostatnich meczów do wyświetlenia na stronie.
+
         # Tutaj powstaną opcje widoczne na liście lig.
     league_options = ""
 
@@ -223,18 +225,21 @@ def home(league_id: int = 1):
         </tr>
         """
 
-    match_rows = ""
+    # Tutaj powstaną wiersze tabeli z ostatnimi meczami.
+    wiersze_meczow = ""
 
-    for football_match in matches:
-        match_rows += f"""
+    # Tworzy wiersz tabeli dla każdego z 10 ostatnich meczów.
+    for mecz in ostatnie_mecze:
+        wiersze_meczow += f"""
         <tr>
-            <td>{football_match['match_date']}</td>
-            <td>{football_match['home_team_name']}</td>
-            <td>{football_match['home_goals']} : {football_match['away_goals']}</td>
-            <td>{football_match['away_team_name']}</td>
-            <td>{football_match['league_name']}</td>
+            <td>{mecz['match_date']}</td>
+            <td>{mecz['home_team_name']}</td>
+            <td>{mecz['home_goals']} : {mecz['away_goals']}</td>
+            <td>{mecz['away_team_name']}</td>
+            <td>{mecz['league_name']}</td>
         </tr>
         """
+
     team_goals = {}
 
     for team in teams:
@@ -358,7 +363,7 @@ def home(league_id: int = 1):
                     </table>
                 </div>
 
-                <h2>Mecze – {selected_league_name}</h2>
+                <h2>10 ostatnich meczów - {selected_league_name}</h2>
                 <div class="table-wrapper">
                     <table>
                         <tr>
@@ -368,7 +373,7 @@ def home(league_id: int = 1):
                             <th>Gość</th>
                             <th>Liga</th>
                         </tr>
-                        {match_rows}
+                        {wiersze_meczow}
                     </table>
                 </div>
             </div>
