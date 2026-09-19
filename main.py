@@ -651,6 +651,33 @@ def team_page(team_id: int):
     statistics = summary["statistics"]
     matches = summary["matches"]
 
+    # Tutaj zapiszemy wyniki pięciu ostatnich meczów.
+    forma = []
+
+        # Sprawdza pięć ostatnich spotkań wybranej drużyny.
+    for mecz in matches[:5]:
+        # Sprawdza, czy wybrana drużyna była gospodarzem.
+        czy_gospodarz = mecz["home_team_name"] == team["name"]
+
+        # Pobiera gole właściwej drużyny i jej przeciwnika.
+        if czy_gospodarz:
+            gole_druzyny = mecz["home_goals"]
+            gole_przeciwnika = mecz["away_goals"]
+        else:
+            gole_druzyny = mecz["away_goals"]
+            gole_przeciwnika = mecz["home_goals"]
+
+        # Zapisuje skrót wyniku: wygrana, remis albo porażka.
+        if gole_druzyny > gole_przeciwnika:
+            forma.append("W")
+        elif gole_druzyny < gole_przeciwnika:
+            forma.append("P")
+        else:
+            forma.append("R")
+
+    # Łączy litery w jeden napis, na przykład: W W R P W.
+    tekst_formy = " ".join(forma)
+
     # Tutaj powstaną wiersze tabeli z meczami.
     match_rows = ""
 
@@ -742,6 +769,11 @@ def team_page(team_id: int):
                     <div class="card">
                         Gole
                         <strong>{statistics['goals_for']}</strong>
+                    </div>
+
+                    <div class="card">
+                        Forma (5 meczów)
+                        <strong>{tekst_formy}</strong>
                     </div>
                 </div>
 
