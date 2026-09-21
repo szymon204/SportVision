@@ -125,7 +125,7 @@ def calculate_standings(teams, matches):
     return standings_list
 
 @app.get("/", response_class=HTMLResponse)  # tworzenie aplikacji (zmienna app). Jak przeglądarka wykonuje GET to uruchamia funkcję znajdującą się poniżej.
-def home(league_id: int = 1):
+def home(league_id: int = 1, liczba_meczow: int = 10):
     # Pobiera wszystkie ligi z lokalnej bazy.
     leagues = get_leagues()
 
@@ -153,7 +153,12 @@ def home(league_id: int = 1):
         # Oblicza tabelę ligową na podstawie drużyn i wyników.
     standings = calculate_standings(teams, matches)
 
-    ostatnie_mecze = matches[:10] # Wybiera 10 ostatnich meczów do wyświetlenia na stronie.
+    if liczba_meczow == 0: #0 - użytkownik chce zobaczyć wszystkie mecze
+        ostatnie_mecze = matches
+        naglowek_meczow = "Wszystkie mecze"
+    else:
+        ostatnie_mecze = matches[:liczba_meczow]
+        naglowek_meczow = f"{liczba_meczow} ostatnich meczów"
 
         # Tutaj powstaną opcje widoczne na liście lig.
     league_options = ""
@@ -308,6 +313,11 @@ def home(league_id: int = 1):
                         <select id="league_id" name="league_id">
                             {league_options}
                         </select>
+                        <input
+                            type="hidden"
+                            name="liczba_meczow"
+                            value="{liczba_meczow}"
+                        >
                         <button type="submit">Pokaż</button>
                     </form>
 
@@ -362,8 +372,7 @@ def home(league_id: int = 1):
                         {team_rows}
                     </table>
                 </div>
-
-                <h2>10 ostatnich meczów - {selected_league_name}</h2>
+                <h2>{naglowek_meczow} - {selected_league_name}</h2>
                 <div class="table-wrapper">
                     <table>
                         <tr>
@@ -375,6 +384,12 @@ def home(league_id: int = 1):
                         </tr>
                         {wiersze_meczow}
                     </table>
+                </div>
+                <div class="match-limit">
+                    <span>Pokaż mecze:</span>
+                    <a href="/?league_id={league_id}&liczba_meczow=10">10</a>
+                    <a href="/?league_id={league_id}&liczba_meczow=30">30</a>
+                    <a href="/?league_id={league_id}&liczba_meczow=0">Wszystkie</a>
                 </div>
             </div>
         </body>
