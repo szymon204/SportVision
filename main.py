@@ -2,24 +2,8 @@ from pathlib import Path #udostępnianie folderu static.
 from fastapi.staticfiles import StaticFiles #udostępnianie folderu static.
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from football_api import (
-    get_api_matches,     # Pobiera mecze wskazanej ligi.
-    get_api_teams,       # Pobiera drużyny wskazanej ligi.
-    test_api_connection  # Sprawdza połączenie z API.
-)
-from database import (
-    add_league,
-    add_match,
-    add_team,
-    create_tables,
-    get_leagues,
-    get_matches,
-    get_teams,
-    get_league_id_by_api_id,
-    get_team_id_by_api_id,
-    match_exists,
-    add_default_leagues
-)
+from football_api import (get_api_matches, get_api_teams, test_api_connection)
+from database import (add_league, add_match, add_team, create_tables, get_leagues, get_matches, get_teams, get_league_id_by_api_id, get_team_id_by_api_id, match_exists, add_default_leagues)
 
 STATIC_DIRECTORY = Path(__file__).parent / "static" #wskazuje folder CSS niezależnie od miejsca uruchomienia programu.
 
@@ -219,21 +203,11 @@ def home(league_id: int = 1, liczba_meczow: int = 10):
             <td><strong>{standing['points']}</strong></td>
         </tr>
         """
-    team_rows = ""
-
-    for team in teams:
-        team_rows += f"""
-        <tr>
-            <td>{team['id']}</td>
-            <td><a href="/teams/{team['id']}">{team['name']}</a></td>
-            <td>{team['league_name']}</td>
-        </tr>
-        """
 
     # Tutaj powstaną wiersze tabeli z ostatnimi meczami.
     wiersze_meczow = ""
 
-    # Tworzy wiersz tabeli dla każdego z 10 ostatnich meczów.
+    # Tworzy wiersz tabeli dla każdego wybranego meczu.
     for mecz in ostatnie_mecze:
         wiersze_meczow += f"""
         <tr>
@@ -361,17 +335,6 @@ def home(league_id: int = 1, liczba_meczow: int = 10):
                     {chart_rows}
                 </div>
 
-                <h2>Drużyny – {selected_league_name}</h2>
-                <div class="table-wrapper">
-                    <table>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nazwa drużyny</th>
-                            <th>Liga</th>
-                        </tr>
-                        {team_rows}
-                    </table>
-                </div>
                 <h2>{naglowek_meczow} - {selected_league_name}</h2>
                 <div class="table-wrapper">
                     <table>
