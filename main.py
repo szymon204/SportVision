@@ -645,13 +645,13 @@ def team_page(team_id: int):
             gole_druzyny = mecz["away_goals"]
             gole_przeciwnika = mecz["home_goals"]
 
-        # Zapisuje skrót wyniku: wygrana, remis albo porażka.
+        # Forma z 5 ostatnich meczy rezultat.
         if gole_druzyny > gole_przeciwnika:
-            forma.append("W")
+            forma.append('<span class="win">W</span>') #dodaje zieloną literę W przy użyciu klasy CSS "win".
         elif gole_druzyny < gole_przeciwnika:
-            forma.append("P")
+            forma.append('<span class="loss">P</span>') #czerwona litera P przy użyciu klasy CSS "loss".
         else:
-            forma.append("R")
+            forma.append('<span class="draw">R</span>') #pomarańczowa litera R przy użyciu klasy CSS "draw".
 
     # Łączy litery w jeden napis, na przykład: W W R P W.
     tekst_formy = " ".join(forma)
