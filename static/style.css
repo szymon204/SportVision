@@ -30,7 +30,7 @@ body {
     max-width: 900px;
 }
 
-/* Nagłówek i podsumowanie strony głównej. */
+/* Główny nagłowek strony. */
 .home-container {
     max-width: 1180px;
     margin: 0 auto;
@@ -53,32 +53,6 @@ body {
     margin: 0;
     font-size: 64px;
     text-align: center;
-}
-
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin: 20px 0;
-}
-
-.summary-card {
-    padding: 20px;
-    border-left: 5px solid #3b82f6;
-    border-radius: 10px;
-    background-color: white;
-    box-shadow: 0 3px 12px rgba(32, 33, 36, 0.08);
-}
-
-.summary-card span,
-.summary-card strong {
-    display: block;
-}
-
-.summary-card strong {
-    margin-top: 8px;
-    color: #3b82f6;
-    font-size: 30px;
 }
 
 .home-page h2 {
@@ -179,6 +153,7 @@ th {
     display: flex;
     align-items: stretch;
     gap: 14px;
+    margin-top: 20px;
 }
 
 select,
@@ -400,17 +375,11 @@ button:hover {
     .comparison-page {
         padding: 16px;
     }
-
     .home-actions,
     .league-form {
         align-items: stretch;
         flex-direction: column;
     }
-
-    .summary-cards {
-        grid-template-columns: 1fr;
-    }
-
     .chart-row {
         grid-template-columns: 110px 1fr 35px;
     }

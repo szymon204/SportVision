@@ -265,22 +265,6 @@ def home(league_id: int = 1, liczba_meczow: int = 10):
                 <header class="hero">
                     <h1>SportVision</h1>
                 </header>
-
-                <section class="summary-cards">
-                    <div class="summary-card">
-                        <span>Dostępne ligi</span>
-                        <strong>{len(leagues)}</strong>
-                    </div>
-                    <div class="summary-card">
-                        <span>Drużyny w lidze</span>
-                        <strong>{len(teams)}</strong>
-                    </div>
-                    <div class="summary-card">
-                        <span>Rozegrane mecze</span>
-                        <strong>{len(matches)}</strong>
-                    </div>
-                </section>
-
                 <div class="home-actions">
                     <form class="league-form" method="get" action="/">
                         <label for="league_id">Wybierz ligę:</label>
