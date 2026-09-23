@@ -85,6 +85,17 @@ Internet jest potrzebny podczas importowania nowych danych. Przeglądanie wcześ
 - `static/style.css` – wygląd aplikacji,
 - `requirements.txt` – lista wymaganych bibliotek.
 
+## Jak działa aplikacja
+
+1. Plik `start.bat` uruchamia serwer Uvicorn i otwiera aplikację w przeglądarce.
+2. Uvicorn uruchamia obiekt `app` z pliku `main.py`.
+3. Przeglądarka wysyła żądanie do wybranego endpointu FastAPI, na przykład `GET /`.
+4. Funkcja endpointu pobiera potrzebne dane za pomocą funkcji z pliku `database.py`.
+5. Plik `database.py` odczytuje ligi, drużyny i mecze z lokalnej bazy `data/sportvision.db`.
+6. `main.py` przygotowuje kod HTML, a przeglądarka wyświetla go razem ze stylami CSS i lokalnymi grafikami.
+
+Plik `football_api.py` jest używany tylko podczas pobierania nowych danych z API-Football. Pobrane dane są zapisywane w SQLite, dlatego ich późniejsze przeglądanie nie wymaga internetu.
+
 ## Status projektu
 
 Projekt jest rozwijany małymi krokami. Obecna wersja działa lokalnie i wykorzystuje dane historyczne z sezonu 2024/2025.

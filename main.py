@@ -2,7 +2,7 @@ from pathlib import Path #udostępnianie folderu static.
 from fastapi.staticfiles import StaticFiles #udostępnianie folderu static.
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from football_api import (get_api_matches, get_api_teams, test_api_connection)
+from football_api import (get_api_matches, get_api_teams)
 from database import (add_league, add_match, add_team, create_tables, get_leagues, get_matches, get_teams, get_league_id_by_api_id, get_team_id_by_api_id, match_exists, add_default_leagues)
 
 STATIC_DIRECTORY = Path(__file__).parent / "static" #wskazuje folder CSS niezależnie od miejsca uruchomienia programu.
@@ -396,10 +396,6 @@ def create_match(
 @app.get("/matches")
 def matches():
     return get_matches()
-
-@app.get("/api/test")
-def api_test():
-    return test_api_connection()
 
 @app.post("/api/import-teams/{league_api_id}")
 def import_teams(league_api_id: int, season: int = 2024):
