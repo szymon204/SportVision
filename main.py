@@ -2,7 +2,7 @@ from pathlib import Path #udostępnianie folderu static.
 from fastapi.staticfiles import StaticFiles #udostępnianie folderu static.
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from football_api import (get_api_matches, get_api_teams)
+from football_api import get_api_matches, get_api_teams
 from database import (add_league, add_match, add_team, create_tables, get_leagues, get_matches, get_teams, get_league_id_by_api_id, get_team_id_by_api_id, match_exists, add_default_leagues)
 
 STATIC_DIRECTORY = Path(__file__).parent / "static" #wskazuje folder CSS niezależnie od miejsca uruchomienia programu.
@@ -108,7 +108,7 @@ def calculate_standings(teams, matches):
     # Zwraca gotową tabelę ligową.
     return standings_list
 
-@app.get("/", response_class=HTMLResponse)  # tworzenie aplikacji (zmienna app). Jak przeglądarka wykonuje GET to uruchamia funkcję znajdującą się poniżej.
+@app.get("/", response_class=HTMLResponse)  # obsługuje wejście na stronę główną i zwraca kod HTML
 def home(league_id: int = 1, liczba_meczow: int = 10):
     # Pobiera wszystkie ligi z lokalnej bazy.
     leagues = get_leagues()
@@ -134,7 +134,7 @@ def home(league_id: int = 1, liczba_meczow: int = 10):
     for football_match in all_matches:
         if football_match["league_id"] == league_id:
             matches.append(football_match)
-        # Oblicza tabelę ligową na podstawie drużyn i wyników.
+    # Oblicza tabelę ligową na podstawie drużyn i wyników.
     standings = calculate_standings(teams, matches)
 
     if liczba_meczow == 0: #0 - użytkownik chce zobaczyć wszystkie mecze
