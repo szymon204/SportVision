@@ -3,6 +3,9 @@
 rem Przechodzi do folderu, w ktorym znajduje sie start.bat.
 cd /d "%~dp0"
 
+rem Nie tworzy pomocniczego katalogu __pycache__ w projekcie.
+set PYTHONDONTWRITEBYTECODE=1
+
 rem Sprawdza, czy srodowisko Pythona jest przygotowane.
 if not exist ".venv\Scripts\python.exe" (
     echo Nie znaleziono srodowiska .venv.
