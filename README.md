@@ -8,6 +8,8 @@ Projekt powstaje jako praca inżynierska. Jego głównym założeniem jest czyte
 
 Kompletne założenia, architektura, historia decyzji, stan danych, roadmapa oraz instrukcja przeniesienia na nowy komputer znajdują się w pliku [KONTEKST_SPORTVISION.md](KONTEKST_SPORTVISION.md). Od tego pliku powinien zacząć pracę również Codex na nowym laptopie.
 
+Stałe zasady pracy Codexa są zapisane w `AGENTS.md`. Jednorazowe przygotowanie bibliotek na nowym Windowsie automatyzuje skrypt `setup_new_laptop.ps1`.
+
 ## Najważniejsze funkcje
 
 - obsługa pięciu najważniejszych lig europejskich,
