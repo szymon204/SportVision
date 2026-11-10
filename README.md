@@ -4,6 +4,10 @@ SportVision to prosta aplikacja internetowa służąca do prezentowania i porów
 
 Projekt powstaje jako praca inżynierska. Jego głównym założeniem jest czytelność kodu, lokalne przechowywanie danych oraz możliwość działania bez internetu po wcześniejszym pobraniu danych.
 
+## Pełny kontekst projektu
+
+Kompletne założenia, architektura, historia decyzji, stan danych, roadmapa oraz instrukcja przeniesienia na nowy komputer znajdują się w pliku [KONTEKST_SPORTVISION.md](KONTEKST_SPORTVISION.md). Od tego pliku powinien zacząć pracę również Codex na nowym laptopie.
+
 ## Najważniejsze funkcje
 
 - obsługa pięciu najważniejszych lig europejskich,
