@@ -892,13 +892,19 @@ def comparison_page(
         # Dodaje drużynę do pierwszego pola wyboru.
         first_team_options += f"""
         <option value="{team['id']}" {first_selected}>
-            {team['name']}
+            <img class="team-option-logo"
+                src="/static/logos/teams/{team['api_id']}.png"
+                alt="">
+                {team['name']}
         </option>
         """
 
         # Dodaje drużynę do drugiego pola wyboru.
         second_team_options += f"""
         <option value="{team['id']}" {second_selected}>
+            <img class="team-option-logo"
+                src="/static/logos/teams/{team['api_id']}.png"
+                alt="">
             {team['name']}
         </option>
         """
@@ -999,7 +1005,14 @@ def comparison_page(
             comparison_html = f"""
             <div class="comparison-result">
                 <h2>
-                    {first_team['name']} vs {second_team['name']}
+                    <img class="table-team-logo"
+                        src="/static/logos/teams/{first_statistics['team_api_id']}.png"
+                        alt="">
+                    {first_team['name']} vs
+                    <img class="table-team-logo"
+                        src="/static/logos/teams/{second_statistics['team_api_id']}.png"
+                        alt="">
+                    {second_team['name']}
                 </h2>
 
                 <p>
@@ -1057,11 +1070,13 @@ def comparison_page(
                         value="{league_id}"
                     >
 
-                    <select name="first_team_id">
+                    <select class="team-select" name="first_team_id">
+                        <button><selectedcontent></selectedcontent></button>
                         {first_team_options}
                     </select>
 
-                    <select name="second_team_id">
+                    <select class="team-select" name="second_team_id">
+                        <button><selectedcontent></selectedcontent></button>
                         {second_team_options}
                     </select>
 
